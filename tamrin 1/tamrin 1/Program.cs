@@ -1,42 +1,47 @@
-﻿List<String> list = new List<String>();
-int current = -1;
-while (true)
+﻿using System;
+
+namespace SearchApp
 {
-    String s = Console.ReadLine().Trim().ToLower();
-    
-    if (s.Equals("exit"))
+    public class Program
     {
-        break;
-    }else if (s.StartsWith("search"))
-    {
-        list.Add(s.Substring("search".Length));
-        current++;
-    }else if (s.StartsWith("back"))
-    {
-        if (current > 0) current--;
-    }else if (s.StartsWith("forward"))
-    {
-        if(current < list.Count-1)current++;
-    }else if (s.StartsWith("current"))
-    {
-        if (current == -1) Console.WriteLine("it s empty");
-        else Console.WriteLine(list[current]);
-    }else if (s.StartsWith("stats"))
-    {
-        var result = list.GroupBy(w => w).OrderByDescending(x => x.Count());
-        int count = 0;
-        foreach (var item in result)
+        public static void Main()
         {
-            Console.WriteLine(item.Key);
-            count++;
-            if(count == 3)break;
-        }
-    }else if (s.StartsWith("unique"))
-    {
-        var result = list.GroupBy(w => w);
-        foreach (var item in result)
-        {
-            if(item.Count() == 1) Console.WriteLine(item.Key);
+            var manager = new SearchManager();
+            var analytics = new SearchAnalytics();
+
+            while (true)
+            {
+                var command = Console.ReadLine().Trim().ToLower();
+
+                if (command.Equals("exit"))
+                {
+                    break;
+                }
+                else if (command.StartsWith("search"))
+                {
+                    manager.AddSearch(command);
+                }
+                else if (command.StartsWith("back"))
+                {
+                    manager.GoBack();
+                }
+                else if (command.StartsWith("forward"))
+                {
+                    manager.GoForward();
+                }
+                else if (command.StartsWith("current"))
+                {
+                    manager.PrintCurrent();
+                }
+                else if (command.StartsWith("stats"))
+                {
+                    analytics.PrintStats(manager.List);
+                }
+                else if (command.StartsWith("unique"))
+                {
+                    analytics.PrintUnique(manager.List);
+                }
+            }
         }
     }
 }
