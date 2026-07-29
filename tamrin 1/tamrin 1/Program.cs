@@ -11,35 +11,43 @@ namespace SearchApp
 
             while (true)
             {
-                var command = Console.ReadLine().Trim().ToLower();
+                var input = Console.ReadLine().Trim();
 
-                if (command.Equals("exit"))
+                var firstWord = input.Split(' ')[0];
+
+                LanguageDictionary.Commands.TryGetValue(firstWord, out var commandType);
+                switch (commandType)
                 {
-                    break;
-                }
-                else if (command.StartsWith("search"))
-                {
-                    manager.AddSearch(command);
-                }
-                else if (command.StartsWith("back"))
-                {
-                    manager.GoBack();
-                }
-                else if (command.StartsWith("forward"))
-                {
-                    manager.GoForward();
-                }
-                else if (command.StartsWith("current"))
-                {
-                    manager.PrintCurrent();
-                }
-                else if (command.StartsWith("stats"))
-                {
-                    analytics.PrintStats(manager.List);
-                }
-                else if (command.StartsWith("unique"))
-                {
-                    analytics.PrintUnique(manager.List);
+                    case CommandType.Exit:
+                        return;
+
+                    case CommandType.Search:
+                        manager.AddSearch(input);
+                        break;
+
+                    case CommandType.Back:
+                        manager.GoBack();
+                        break;
+
+                    case CommandType.Forward:
+                        manager.GoForward();
+                        break;
+
+                    case CommandType.Current:
+                        manager.PrintCurrent();
+                        break;
+
+                    case CommandType.Stats:
+                        analytics.PrintStats(manager.List);
+                        break;
+
+                    case CommandType.Unique:
+                        analytics.PrintUnique(manager.List);
+                        break;
+
+                    default:
+                        Console.WriteLine("Command not recognized.");
+                        break;
                 }
             }
         }

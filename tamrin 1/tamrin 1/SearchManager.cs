@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace SearchApp
@@ -9,6 +9,7 @@ namespace SearchApp
         //for saving all commands
         public int Current { get; set; } = -1;
         //for showing where we are right now
+
         public void AddSearch(string command)
         {
             if (Current < List.Count - 1)
