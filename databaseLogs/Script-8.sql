@@ -1,0 +1,3 @@
+SELECT ParticipantStudentNumber, COUNT(ParticipantStudentNumber)
+FROM Enrollment
+GROUP BY ParticipantStudentNumber;
