@@ -1,29 +1,25 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace SearchApp
+namespace tamrin_1
 {
-    public class SearchAnalytics
+    public static class SearchAnalytics
     {
-        public void PrintStats(List<string> list)
+        public static void PrintStats(List<string> list)
         {
             var result = list.GroupBy(command => command).OrderByDescending(item => item.Count());
-            var count = 0;
-            foreach (var item in result)
+            
+            foreach (var item in result.Take(3))
             {
                 Console.WriteLine(item.Key);
-                count++;
-                if (count == 3) break;
             }
         }
 
-        public void PrintUnique(List<string> list)
+        public static void PrintUnique(List<string> list)
         {
             var result = list.GroupBy(w => w);
-            foreach (var item in result)
+            
+            foreach (var item in result
+                         .Where(x => x.Count() == 1))
             {
-                if (item.Count() == 1) Console.WriteLine(item.Key);
+                Console.WriteLine(item.Key);
             }
         }
     }

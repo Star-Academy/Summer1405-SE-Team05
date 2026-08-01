@@ -1,55 +1,45 @@
-﻿using System;
+﻿using tamrin_1;
 
-namespace SearchApp
+var manager = new SearchManager();
+
+while (true)
 {
-    public class Program
+    var input = Console.ReadLine().Trim();
+
+    var firstWord = input.Split(' ')[0];
+
+    LanguageDictionary.Commands.TryGetValue(firstWord, out var commandType);
+    switch (commandType)
     {
-        public static void Main()
-        {
-            var manager = new SearchManager();
-            var analytics = new SearchAnalytics();
+        case CommandType.Exit:
+            return;
 
-            while (true)
-            {
-                var input = Console.ReadLine().Trim();
+        case CommandType.Search:
+            manager.AddSearch(input);
+            break;
 
-                var firstWord = input.Split(' ')[0];
+        case CommandType.Back:
+            manager.GoBack();
+            break;
 
-                LanguageDictionary.Commands.TryGetValue(firstWord, out var commandType);
-                switch (commandType)
-                {
-                    case CommandType.Exit:
-                        return;
+        case CommandType.Forward:
+            manager.GoForward();
+            break;
 
-                    case CommandType.Search:
-                        manager.AddSearch(input);
-                        break;
+        case CommandType.Current:
+            manager.PrintCurrent();
+            break;
 
-                    case CommandType.Back:
-                        manager.GoBack();
-                        break;
+        case CommandType.Stats:
+            SearchAnalytics.PrintStats(manager.List);
+            break;
 
-                    case CommandType.Forward:
-                        manager.GoForward();
-                        break;
+        case CommandType.Unique:
+            SearchAnalytics.PrintUnique(manager.List);
+            break;
 
-                    case CommandType.Current:
-                        manager.PrintCurrent();
-                        break;
-
-                    case CommandType.Stats:
-                        analytics.PrintStats(manager.List);
-                        break;
-
-                    case CommandType.Unique:
-                        analytics.PrintUnique(manager.List);
-                        break;
-
-                    default:
-                        Console.WriteLine("Command not recognized.");
-                        break;
-                }
-            }
-        }
+        default:
+            Console.WriteLine("Command not recognized.");
+            break;
     }
 }

@@ -1,13 +1,11 @@
-using System;
-using System.Collections.Generic;
-
-namespace SearchApp
+namespace tamrin_1
 {
     public class SearchManager
     {
         public List<string> List { get; set; } = new List<string>();
         //for saving all commands
-        public int Current { get; set; } = -1;
+
+        private int Current { get; set; } 
         //for showing where we are right now
 
         public void AddSearch(string command)

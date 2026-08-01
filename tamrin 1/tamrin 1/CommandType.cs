@@ -1,3 +1,5 @@
+namespace tamrin_1;
+
 public enum CommandType
 {
     Unknown,

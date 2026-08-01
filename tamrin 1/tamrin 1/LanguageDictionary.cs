@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-
-namespace SearchApp
+namespace tamrin_1
 {
     public static class LanguageDictionary
     {
