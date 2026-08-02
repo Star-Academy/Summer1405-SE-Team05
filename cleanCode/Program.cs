@@ -24,7 +24,6 @@ void TestPostgres()
 
     using var command = new NpgsqlCommand(result.Sql, connection);
 
-    // 👈 فقط همین تیکه اصلاح شد: ارسال مستقیم مقادیر بدون اسم دادن
     foreach (var binding in result.Bindings)
     {
         command.Parameters.AddWithValue(binding);
