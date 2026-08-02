@@ -1,9 +1,10 @@
 ﻿using Npgsql;
+using Microsoft.Data.SqlClient;
 using t4;
 
 TestPostgres();
 
-// TestSqlServer();
+TestSqlServer();
 
 void TestPostgres()
 {
@@ -24,6 +25,7 @@ void TestPostgres()
 
     using var command = new NpgsqlCommand(result.Sql, connection);
 
+    
     foreach (var binding in result.Bindings)
     {
         command.Parameters.AddWithValue(binding);
@@ -44,15 +46,38 @@ void TestPostgres()
 
 void TestSqlServer()
 {
+    string connectionString = "Server=localhost,1433;Database=StarAcademy;User Id=sa;Password=Your_strong_Password123;TrustServerCertificate=True;";
+
+    using var connection = new SqlConnection(connectionString);
+    connection.Open();
+
     var compiler = new SqlServerCompiler();
 
     var query = new Query()
-        .From("student")
-        .Select("studentnumber", "firstname", "lastname")
-        .Where("ismale", ExpressionOperator.Equals, true); 
+        .From("Student")
+        .Select("StudentNumber", "FirstName", "LastName")
+        .Where("IsMale", ExpressionOperator.Equals, true); 
 
     SqlResult result = compiler.Compile(query);
     PrintResult(result);
+
+    using var command = new SqlCommand(result.Sql, connection);
+
+    foreach (var binding in result.Bindings)
+    {
+        command.Parameters.AddWithValue("@p" + command.Parameters.Count, binding ?? DBNull.Value);
+    }
+
+    using var reader = command.ExecuteReader();
+    Console.WriteLine("--- SQL Server Results ---");
+    while (reader.Read())
+    {
+        string studentNumber = reader.GetString(0);
+        string firstName = reader.GetString(1);
+        string lastName = reader.GetString(2);
+        Console.WriteLine($"{studentNumber} | {firstName} {lastName}");
+    }
+    Console.WriteLine(new string('=', 40));
 }
 
 void PrintResult(SqlResult result)
