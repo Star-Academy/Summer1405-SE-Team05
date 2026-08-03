@@ -2,87 +2,59 @@
 using Microsoft.Data.SqlClient;
 using t4;
 
-TestPostgres();
+// ==========================================
+// ۱. تست PostgreSQL
+// ==========================================
+Console.WriteLine(">>> Executing Postgres Query...");
 
-TestSqlServer();
+string pgConnectionString = "Host=localhost;Port=5432;Database=staracademy;Username=postgres;Password=postgres";
+using var pgConnection = new NpgsqlConnection(pgConnectionString);
 
-void TestPostgres()
+var pgCompiler = new PostgresCompiler();
+var pgExecutor = new DatabaseExecutor(pgConnection, pgCompiler);
+
+var pgQuery = new Query()
+    .From("student")
+    .Select("studentnumber", "firstname", "lastname", "grade")
+    .Where("grade", ExpressionOperator.GreaterThanOrEqual, 16);
+
+try
 {
-    string connectionString = "Host=localhost;Port=5432;Database=staracademy;Username=postgres;Password=postgres";
-
-    using var connection = new NpgsqlConnection(connectionString);
-    connection.Open();
-
-    var compiler = new PostgresCompiler();
-
-    var query = new Query()
-        .From("student")
-        .Select("studentnumber", "firstname", "lastname", "grade")
-        .Where("grade", ExpressionOperator.GreaterThanOrEqual, 16);
-
-    SqlResult result = compiler.Compile(query);
-    PrintResult(result);
-
-    using var command = new NpgsqlCommand(result.Sql, connection);
-
-    
-    foreach (var binding in result.Bindings)
-    {
-        command.Parameters.AddWithValue(binding);
-    }
-
-    using var reader = command.ExecuteReader();
-    Console.WriteLine("--- Database Results ---");
-    while (reader.Read())
-    {
-        string studentNumber = reader.GetString(0);
-        string firstName = reader.GetString(1);
-        string lastName = reader.GetString(2);
-        float grade = reader.GetFloat(3);
-        Console.WriteLine($"{studentNumber} | {firstName} {lastName} | Grade: {grade}");
-    }
+    pgExecutor.ExecuteAndPrint(pgQuery, reader => 
+        $"{reader.GetString(0)} | {reader.GetString(1)} {reader.GetString(2)} | Grade: {reader.GetFloat(3)}"
+    );
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Postgres Error: {ex.Message}");
     Console.WriteLine(new string('=', 40));
 }
 
-void TestSqlServer()
+
+// ==========================================
+// ۲. تست SQL Server
+// ==========================================
+Console.WriteLine("\n>>> Executing SQL Server Query...");
+
+string sqlServerConnectionString = "Server=localhost,1433;Database=StarAcademy;User Id=sa;Password=Your_strong_Password123;TrustServerCertificate=True;";
+using var sqlConnection = new SqlConnection(sqlServerConnectionString);
+
+var sqlCompiler = new SqlServerCompiler();
+var sqlExecutor = new DatabaseExecutor(sqlConnection, sqlCompiler);
+
+var sqlServerQuery = new Query()
+    .From("Student")
+    .Select("StudentNumber", "FirstName", "LastName")
+    .Where("IsMale", ExpressionOperator.Equals, true);
+
+try
 {
-    string connectionString = "Server=localhost,1433;Database=StarAcademy;User Id=sa;Password=Your_strong_Password123;TrustServerCertificate=True;";
-
-    using var connection = new SqlConnection(connectionString);
-    connection.Open();
-
-    var compiler = new SqlServerCompiler();
-
-    var query = new Query()
-        .From("Student")
-        .Select("StudentNumber", "FirstName", "LastName")
-        .Where("IsMale", ExpressionOperator.Equals, true); 
-
-    SqlResult result = compiler.Compile(query);
-    PrintResult(result);
-
-    using var command = new SqlCommand(result.Sql, connection);
-
-    foreach (var binding in result.Bindings)
-    {
-        command.Parameters.AddWithValue("@p" + command.Parameters.Count, binding ?? DBNull.Value);
-    }
-
-    using var reader = command.ExecuteReader();
-    Console.WriteLine("--- SQL Server Results ---");
-    while (reader.Read())
-    {
-        string studentNumber = reader.GetString(0);
-        string firstName = reader.GetString(1);
-        string lastName = reader.GetString(2);
-        Console.WriteLine($"{studentNumber} | {firstName} {lastName}");
-    }
-    Console.WriteLine(new string('=', 40));
+    sqlExecutor.ExecuteAndPrint(sqlServerQuery, reader => 
+        $"{reader.GetString(0)} | {reader.GetString(1)} {reader.GetString(2)}"
+    );
 }
-
-void PrintResult(SqlResult result)
+catch (Exception ex)
 {
-    Console.WriteLine($"Generated SQL: {result.Sql}");
-    Console.WriteLine("Bindings: " + string.Join(", ", result.Bindings));
-    Console.WriteLine(new string('-', 40));
+    Console.WriteLine($"SQL Server Error: {ex.Message}");
+    Console.WriteLine(new string('=', 40));
 }

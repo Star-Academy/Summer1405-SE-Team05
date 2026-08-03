@@ -2,7 +2,7 @@ namespace t4;
 
 using System.Text;
 
-public abstract class SqlCompiler
+public abstract class SqlCompiler : ICompiler
 {
     protected abstract string WrapIdentifier(string identifier);
     protected abstract string FormatParameter(int index);
@@ -46,7 +46,7 @@ public abstract class SqlCompiler
 
     private string CompileFrom(Query query)
     {
-        return $"FROM {WrapIdentifier(query.Table)}";
+        return $"FROM {WrapIdentifier(query.Table!)}";
     }
 
     private string CompileWhere(Query query, List<object> bindings)
@@ -72,4 +72,6 @@ public abstract class SqlCompiler
 
         return sb.ToString();
     }
+
+    string ICompiler.FormatParameter(int index) => FormatParameter(index);
 }

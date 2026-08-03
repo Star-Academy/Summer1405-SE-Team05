@@ -9,6 +9,4 @@ public class PostgresCompiler : SqlCompiler
 
     protected override string FormatParameter(int index) 
         => $"${index + 1}";
-
-    
 }

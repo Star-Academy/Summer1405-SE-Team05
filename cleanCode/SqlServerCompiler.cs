@@ -10,8 +10,6 @@ public class SqlServerCompiler : SqlCompiler
     protected override string FormatParameter(int index) 
         => $"@p{index}";
 
-    
-
     protected override object TransformValue(object value)
     {
         if (value is bool b)
