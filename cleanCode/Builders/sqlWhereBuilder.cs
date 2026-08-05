@@ -5,13 +5,21 @@ namespace CleanCode;
 internal sealed class SqlWhereBuilder : IWhereBuilder
 {
     private readonly IParameterIdentifier _paramIdentifier;
+    private readonly IExpressionOperator _expressionOperator;
 
-    public SqlWhereBuilder(IParameterIdentifier paramIdentifier)
+    public SqlWhereBuilder(
+        IParameterIdentifier paramIdentifier,
+        IExpressionOperator expressionOperator)
     {
         _paramIdentifier = paramIdentifier ?? throw new ArgumentNullException(nameof(paramIdentifier));
+        _expressionOperator = expressionOperator ?? throw new ArgumentNullException(nameof(expressionOperator));
     }
+
     public string Build(List<QueryClause> clauses, List<object> bindings)
     {
+        ArgumentNullException.ThrowIfNull(clauses);
+        ArgumentNullException.ThrowIfNull(bindings);
+
         if (clauses.Count == 0) return string.Empty;
 
         var stringBuilder = new StringBuilder("WHERE ");
@@ -22,13 +30,23 @@ internal sealed class SqlWhereBuilder : IWhereBuilder
             var condition = clause.WhereCondition;
 
             if (i > 0)
-                stringBuilder.Append($" {_paramIdentifier.GetLogicalOperatorString(clause.LogicalOperator)} ");
+            {
+                stringBuilder.Append(' ')
+                             .Append(_paramIdentifier.GetLogicalOperatorString(clause.LogicalOperator))
+                             .Append(' ');
+            }
 
             var column = _paramIdentifier.WrapIdentifier(condition.Column);
-            var paramPlaceholder = _paramIdentifier.FormatParameter(i);
+            var operatorSymbol = _expressionOperator.GetSymbol(condition.Operator);
+            var paramPlaceholder = _paramIdentifier.FormatParameter(bindings.Count);
             var processedValue = _paramIdentifier.TransformValue(condition.Value);
 
-            stringBuilder.Append($"{column} {condition.Operator.Symbol} {paramPlaceholder}");
+            stringBuilder.Append(column)
+                         .Append(' ')
+                         .Append(operatorSymbol)
+                         .Append(' ')
+                         .Append(paramPlaceholder);
+
             bindings.Add(processedValue);
         }
 

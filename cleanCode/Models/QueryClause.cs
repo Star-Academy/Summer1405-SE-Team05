@@ -1,3 +1,3 @@
 namespace CleanCode;
 
-internal sealed record QueryClause(WhereCondition WhereCondition, LogicalOperator LogicalOperator);
+public sealed record QueryClause(WhereCondition WhereCondition, LogicalOperator LogicalOperator);
