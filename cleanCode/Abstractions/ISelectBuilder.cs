@@ -2,5 +2,5 @@ namespace CleanCode;
 
 internal interface ISelectBuilder
 {
-    string Build(List<string> columns, IParameterIdentifier paramIdentifier);
+    string Build(List<string> columns);
 }

@@ -2,31 +2,36 @@ using System.Text;
 
 namespace CleanCode;
 
-
 internal sealed class SqlWhereBuilder : IWhereBuilder
 {
-    public string Build(List<QueryClause> clauses, IParameterIdentifier paramIdentifier, List<object> bindings)
+    private readonly IParameterIdentifier _paramIdentifier;
+
+    public SqlWhereBuilder(IParameterIdentifier paramIdentifier)
+    {
+        _paramIdentifier = paramIdentifier ?? throw new ArgumentNullException(nameof(paramIdentifier));
+    }
+    public string Build(List<QueryClause> clauses, List<object> bindings)
     {
         if (clauses.Count == 0) return string.Empty;
 
-        var sb = new StringBuilder("WHERE ");
+        var stringBuilder = new StringBuilder("WHERE ");
 
         for (var i = 0; i < clauses.Count; i++)
         {
             var clause = clauses[i];
-            var cond = clause.Condition;
+            var condition = clause.WhereCondition;
 
             if (i > 0)
-                sb.Append($" {paramIdentifier.GetLogicalOperatorString(clause.LogicalOp)} ");
+                stringBuilder.Append($" {_paramIdentifier.GetLogicalOperatorString(clause.LogicalOperator)} ");
 
-            var column = paramIdentifier.WrapIdentifier(cond.Column);
-            var paramPlaceholder = paramIdentifier.FormatParameter(i);
-            var processedValue = paramIdentifier.TransformValue(cond.Value);
+            var column = _paramIdentifier.WrapIdentifier(condition.Column);
+            var paramPlaceholder = _paramIdentifier.FormatParameter(i);
+            var processedValue = _paramIdentifier.TransformValue(condition.Value);
 
-            sb.Append($"{column} {cond.Operator.Symbol} {paramPlaceholder}");
+            stringBuilder.Append($"{column} {condition.Operator.Symbol} {paramPlaceholder}");
             bindings.Add(processedValue);
         }
 
-        return sb.ToString();
+        return stringBuilder.ToString();
     }
 }

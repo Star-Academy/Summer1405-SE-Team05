@@ -1,13 +1,18 @@
-
 namespace CleanCode;
 
 internal sealed class SqlFromBuilder : IFromBuilder
 {
-    public string Build(string? table, IParameterIdentifier paramIdentifier)
+    private readonly IParameterIdentifier _paramIdentifier;
+
+    public SqlFromBuilder(IParameterIdentifier paramIdentifier)
+    {
+        _paramIdentifier = paramIdentifier ?? throw new ArgumentNullException(nameof(paramIdentifier));
+    }
+    public string Build(string? table)
     {
         if (string.IsNullOrWhiteSpace(table))
             throw new ArgumentException("Table name cannot be null or empty.");
 
-        return $"FROM {paramIdentifier.WrapIdentifier(table)}";
+        return $"FROM {_paramIdentifier.WrapIdentifier(table)}";
     }
 }

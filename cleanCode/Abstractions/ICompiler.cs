@@ -2,7 +2,6 @@ namespace CleanCode;
 
 public interface ICompiler
 {
-    SqlInput Compile(Query query );
+    SqlInput Compile(Query query);
     string FormatParameterName(int index);
-    
-    }
+}

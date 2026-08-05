@@ -1,15 +1,16 @@
-namespace CleanCode;
-
+using System.Data;
 using System.Data.Common;
 
-public sealed class DatabaseExecutor
+namespace CleanCode;
+
+public sealed class DatabaseExecutor : IExecuter
 {
     private readonly ICompiler _compiler;
-    private readonly DbConnection _connection;
+    private readonly DbConnection _dbConnection;
 
-    public DatabaseExecutor(DbConnection connection, ICompiler compiler)
+    public DatabaseExecutor(DbConnection dbConnection, ICompiler compiler)
     {
-        _connection = connection ?? throw new ArgumentNullException(nameof(connection));
+        _dbConnection = dbConnection ?? throw new ArgumentNullException(nameof(dbConnection));
         _compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
     }
 
@@ -24,10 +25,7 @@ public sealed class DatabaseExecutor
         using var reader = command.ExecuteReader();
 
         var results = new List<T>();
-        while (reader.Read())
-        {
-            results.Add(mapper(reader));
-        }
+        while (reader.Read()) results.Add(mapper(reader));
 
         return results;
     }
@@ -37,20 +35,17 @@ public sealed class DatabaseExecutor
         ArgumentNullException.ThrowIfNull(records);
 
         Console.WriteLine("--- Database Results ---");
-        foreach (var record in records)
-        {
-            Console.WriteLine(record);
-        }
+        foreach (var record in records) Console.WriteLine(record);
         Console.WriteLine(new string('=', 40));
     }
 
-    private DbCommand CreateCommand(Query query)
+    public DbCommand CreateCommand(Query query)
     {
         var result = _compiler.Compile(query);
         PrintSql(result);
 
-        var command = _connection.CreateCommand();
-        command.CommandText = result.Sql;
+        var command = _dbConnection.CreateCommand();
+        command.CommandText = result.QueryString;
 
         for (var i = 0; i < result.Bindings.Count; i++)
         {
@@ -66,15 +61,12 @@ public sealed class DatabaseExecutor
 
     private void EnsureConnectionIsOpen()
     {
-        if (_connection.State != System.Data.ConnectionState.Open)
-        {
-            _connection.Open();
-        }
+        if (_dbConnection.State != ConnectionState.Open) _dbConnection.Open();
     }
 
     private void PrintSql(SqlInput result)
     {
-        Console.WriteLine($"Generated SQL: {result.Sql}");
+        Console.WriteLine($"Generated SQL: {result.QueryString}");
         Console.WriteLine("Bindings: " + string.Join(", ", result.Bindings));
         Console.WriteLine(new string('-', 40));
     }

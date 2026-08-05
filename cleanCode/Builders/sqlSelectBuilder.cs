@@ -1,14 +1,18 @@
-
 namespace CleanCode;
 
 internal sealed class SqlSelectBuilder : ISelectBuilder
 {
-    public string Build(List<string> columns, IParameterIdentifier paramIdentifier)
+    private readonly IParameterIdentifier _paramIdentifier;
+    public SqlSelectBuilder(IParameterIdentifier paramIdentifier)
     {
-        var cols = columns.Count > 0
-            ? string.Join(paramIdentifier.ColumnSeparator, columns.Select(paramIdentifier.WrapIdentifier))
+        _paramIdentifier = paramIdentifier ?? throw new ArgumentNullException(nameof(paramIdentifier));
+    }
+    public string Build(List<string> columns)
+    {
+        var columons = columns.Count > 0
+            ? string.Join(_paramIdentifier.ColumnSeparator, columns.Select(_paramIdentifier.WrapIdentifier))
             : "*";
 
-        return $"SELECT {cols}";
+        return $"SELECT {columons}";
     }
 }

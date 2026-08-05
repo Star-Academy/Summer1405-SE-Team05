@@ -9,5 +9,8 @@ public interface IParameterIdentifier
     string GetLogicalOperatorString(LogicalOperator logicalOp);
     string FormatParameterName(int index);
 
-    object TransformValue(object value) => value;
+    object TransformValue(object value)
+    {
+        return value;
+    }
 }

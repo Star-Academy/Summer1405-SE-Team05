@@ -4,7 +4,7 @@ public sealed class Query
 {
     public string? Table { get; private set; }
     public List<string> Columns { get; } = new();
-    internal List<QueryClause> Clauses { get; } = new();
+    internal List<QueryClause> QueryClauses { get; } = new();
 
     public Query From(string table)
     {
@@ -18,10 +18,10 @@ public sealed class Query
         return this;
     }
 
-    public Query Where(string column, ExpressionOperator op, object value)
+    public Query Where(string column, ExpressionOperator expressionOperator, object value)
     {
-        var condition = new WhereCondition(column, op, value);
-        Clauses.Add(new QueryClause(condition, LogicalOperator.And));
+        var condition = new WhereCondition(column, expressionOperator, value);
+        QueryClauses.Add(new QueryClause(condition, LogicalOperator.And));
         return this;
     }
 
@@ -30,10 +30,10 @@ public sealed class Query
         return Where(column, ExpressionOperator.Equals, value);
     }
 
-    public Query OrWhere(string column, ExpressionOperator op, object value)
+    public Query OrWhere(string column, ExpressionOperator expressionOperator, object value)
     {
-        var condition = new WhereCondition(column, op, value);
-        Clauses.Add(new QueryClause(condition, LogicalOperator.Or));
+        var condition = new WhereCondition(column, expressionOperator, value);
+        QueryClauses.Add(new QueryClause(condition, LogicalOperator.Or));
         return this;
     }
 

@@ -2,18 +2,18 @@ namespace CleanCode;
 
 internal sealed class PostgresCompiler : ICompiler
 {
+    private readonly ICommonCompiler _commonCompiler;
+    private readonly IFromBuilder _fromBuilder;
     private readonly IParameterIdentifier _paramIdentifier;
     private readonly ISelectBuilder _selectBuilder;
-    private readonly IFromBuilder _fromBuilder;
     private readonly IWhereBuilder _whereBuilder;
-    private readonly SqlCompilerCommon _commonCompiler;
 
     public PostgresCompiler(
         IParameterIdentifier paramIdentifier,
         ISelectBuilder selectBuilder,
         IFromBuilder fromBuilder,
         IWhereBuilder whereBuilder,
-        SqlCompilerCommon commonCompiler)
+        ICommonCompiler commonCompiler)
     {
         _paramIdentifier = paramIdentifier;
         _selectBuilder = selectBuilder;
@@ -24,7 +24,7 @@ internal sealed class PostgresCompiler : ICompiler
 
     public SqlInput Compile(Query query)
     {
-        return _commonCompiler.Compile(query, _selectBuilder, _fromBuilder, _whereBuilder, _paramIdentifier);
+        return _commonCompiler.Compile(query, _selectBuilder, _fromBuilder, _whereBuilder);
     }
 
     public string FormatParameterName(int index)

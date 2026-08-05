@@ -2,19 +2,25 @@ namespace CleanCode;
 
 internal sealed class SqlServerCompiler : ICompiler
 {
+    private readonly ICommonCompiler _commonCompiler;
+    private readonly IFromBuilder _fromBuilder;
     private readonly IParameterIdentifier _paramIdentifier;
     private readonly ISelectBuilder _selectBuilder;
-    private readonly IFromBuilder _fromBuilder;
     private readonly IWhereBuilder _whereBuilder;
-    private readonly SqlCompilerCommon _commonCompiler;
 
     public SqlServerCompiler(
         IParameterIdentifier paramIdentifier,
         ISelectBuilder selectBuilder,
         IFromBuilder fromBuilder,
         IWhereBuilder whereBuilder,
-        SqlCompilerCommon commonCompiler)
+        ICommonCompiler commonCompiler)
     {
+        ArgumentNullException.ThrowIfNull(paramIdentifier);
+        ArgumentNullException.ThrowIfNull(selectBuilder);
+        ArgumentNullException.ThrowIfNull(fromBuilder);
+        ArgumentNullException.ThrowIfNull(whereBuilder);
+        ArgumentNullException.ThrowIfNull(commonCompiler);
+
         _paramIdentifier = paramIdentifier;
         _selectBuilder = selectBuilder;
         _fromBuilder = fromBuilder;
@@ -24,7 +30,8 @@ internal sealed class SqlServerCompiler : ICompiler
 
     public SqlInput Compile(Query query)
     {
-        return _commonCompiler.Compile(query, _selectBuilder, _fromBuilder, _whereBuilder, _paramIdentifier);
+        ArgumentNullException.ThrowIfNull(query);
+        return _commonCompiler.Compile(query, _selectBuilder, _fromBuilder, _whereBuilder);
     }
 
     public string FormatParameterName(int index)

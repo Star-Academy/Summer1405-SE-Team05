@@ -2,28 +2,27 @@ using System.Text;
 
 namespace CleanCode;
 
-internal sealed class SqlCompilerCommon 
+internal sealed class SqlCompilerCommon : ICommonCompiler
 {
     public SqlInput Compile(
-        Query query, 
-        ISelectBuilder selectBuilder, 
-        IFromBuilder fromBuilder, 
-        IWhereBuilder whereBuilder, 
-        IParameterIdentifier paramIdentifier)
+        Query query,
+        ISelectBuilder selectBuilder,
+        IFromBuilder fromBuilder,
+        IWhereBuilder whereBuilder)
     {
         var bindings = new List<object>();
-        var sb = new StringBuilder();
+        var stringBuilder = new StringBuilder();
 
-        sb.Append(selectBuilder.Build(query.Columns, paramIdentifier));
-        sb.Append(" ");
-        sb.Append(fromBuilder.Build(query.Table, paramIdentifier));
+        stringBuilder.Append(selectBuilder.Build(query.Columns));
+        stringBuilder.Append(" ");
+        stringBuilder.Append(fromBuilder.Build(query.Table));
 
-        if (query.Clauses.Count > 0)
+        if (query.QueryClauses.Count > 0)
         {
-            sb.Append(" ");
-            sb.Append(whereBuilder.Build(query.Clauses, paramIdentifier, bindings));
+            stringBuilder.Append(" ");
+            stringBuilder.Append(whereBuilder.Build(query.QueryClauses, bindings));
         }
 
-        return new SqlInput(sb.ToString(), bindings);
+        return new SqlInput(stringBuilder.ToString(), bindings);
     }
 }

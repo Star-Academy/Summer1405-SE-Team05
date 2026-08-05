@@ -13,10 +13,14 @@ internal sealed class PostgresParameterIdentifier : IParameterIdentifier
     {
         return $"${index + 1}";
     }
-    public string FormatParameterName(int index) => "";
 
-    public string GetLogicalOperatorString(LogicalOperator logicalOp)
+    public string FormatParameterName(int index)
     {
-        return logicalOp.ToString().ToUpper();
+        return "";
+    }
+
+    public string GetLogicalOperatorString(LogicalOperator logicalOperator)
+    {
+        return logicalOperator.ToString().ToUpper();
     }
 }

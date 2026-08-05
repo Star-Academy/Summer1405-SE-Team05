@@ -4,10 +4,10 @@ public sealed class SqlInput
 {
     public SqlInput(string sql, List<object> bindings)
     {
-        Sql = sql;
+        QueryString = sql;
         Bindings = bindings.AsReadOnly();
     }
 
-    public string Sql { get; }
+    public string QueryString { get; }
     public IReadOnlyList<object> Bindings { get; }
 }

@@ -13,7 +13,11 @@ internal sealed class SqlServerParameterIdentifier : IParameterIdentifier
     {
         return $"@p{index}";
     }
-    public string FormatParameterName(int index) => $"@p{index}";
+
+    public string FormatParameterName(int index)
+    {
+        return $"@p{index}";
+    }
 
     public string GetLogicalOperatorString(LogicalOperator logicalOp)
     {
