@@ -1,4 +1,4 @@
-namespace t4;
+namespace CleanCode;
 
 public enum LogicalOperator
 {

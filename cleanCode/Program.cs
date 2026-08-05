@@ -1,16 +1,29 @@
-﻿using Npgsql;
-using Microsoft.Data.SqlClient;
-using t4;
+﻿using Microsoft.Data.SqlClient;
+using Npgsql;
+using System.Data.Common;
+using CleanCode;
 
-// ==========================================
-// ۱. تست PostgreSQL
-// ==========================================
+DotNetEnv.Env.Load();
+
+ISelectBuilder selectBuilder = new SqlSelectBuilder();
+IFromBuilder fromBuilder = new SqlFromBuilder();
+IWhereBuilder whereBuilder = new SqlWhereBuilder();
+var commonCompiler = new SqlCompilerCommon();
+
+
 Console.WriteLine(">>> Executing Postgres Query...");
 
-string pgConnectionString = "Host=localhost;Port=5432;Database=staracademy;Username=postgres;Password=postgres";
+var pgConnectionString = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING");
 using var pgConnection = new NpgsqlConnection(pgConnectionString);
 
-var pgCompiler = new PostgresCompiler();
+ICompiler pgCompiler = new PostgresCompiler(
+    new PostgresParameterIdentifier(),
+    selectBuilder,
+    fromBuilder,
+    whereBuilder,
+    commonCompiler
+);
+
 var pgExecutor = new DatabaseExecutor(pgConnection, pgCompiler);
 
 var pgQuery = new Query()
@@ -20,26 +33,41 @@ var pgQuery = new Query()
 
 try
 {
-    pgExecutor.ExecuteAndPrint(pgQuery, reader => 
+    var pgResults = pgExecutor.Execute(pgQuery, reader =>
         $"{reader.GetString(0)} | {reader.GetString(1)} {reader.GetString(2)} | Grade: {reader.GetFloat(3)}"
     );
+    pgExecutor.PrintResults(pgResults);
 }
-catch (Exception ex)
+catch (PostgresException ex)
 {
-    Console.WriteLine($"Postgres Error: {ex.Message}");
+    Console.WriteLine($"[Postgres Server Error Code {ex.SqlState}]: {ex.MessageText}");
+    Console.WriteLine(new string('=', 40));
+}
+catch (NpgsqlException ex)
+{
+    Console.WriteLine($"[Postgres Driver/Conn Error]: {ex.Message}");
+    Console.WriteLine(new string('=', 40));
+}
+catch (InvalidOperationException ex)
+{
+    Console.WriteLine($"[Postgres Invalid Operation]: {ex.Message}");
     Console.WriteLine(new string('=', 40));
 }
 
 
-// ==========================================
-// ۲. تست SQL Server
-// ==========================================
 Console.WriteLine("\n>>> Executing SQL Server Query...");
 
-string sqlServerConnectionString = "Server=localhost,1433;Database=StarAcademy;User Id=sa;Password=Your_strong_Password123;TrustServerCertificate=True;";
+var sqlServerConnectionString = Environment.GetEnvironmentVariable("SQLSERVER_CONNECTION_STRING");
 using var sqlConnection = new SqlConnection(sqlServerConnectionString);
 
-var sqlCompiler = new SqlServerCompiler();
+ICompiler sqlCompiler = new SqlServerCompiler(
+    new SqlServerParameterIdentifier(),
+    selectBuilder,
+    fromBuilder,
+    whereBuilder,
+    commonCompiler
+);
+
 var sqlExecutor = new DatabaseExecutor(sqlConnection, sqlCompiler);
 
 var sqlServerQuery = new Query()
@@ -49,12 +77,24 @@ var sqlServerQuery = new Query()
 
 try
 {
-    sqlExecutor.ExecuteAndPrint(sqlServerQuery, reader => 
+    var sqlResults = sqlExecutor.Execute(sqlServerQuery, reader =>
         $"{reader.GetString(0)} | {reader.GetString(1)} {reader.GetString(2)}"
     );
+
+    sqlExecutor.PrintResults(sqlResults);
 }
-catch (Exception ex)
+catch (SqlException ex)
 {
-    Console.WriteLine($"SQL Server Error: {ex.Message}");
+    Console.WriteLine($"[SQL Server Error #{ex.Number}]: {ex.Message}");
+    Console.WriteLine(new string('=', 40));
+}
+catch (DbException ex)
+{
+    Console.WriteLine($"[Database Exception]: {ex.Message}");
+    Console.WriteLine(new string('=', 40));
+}
+catch (InvalidOperationException ex)
+{
+    Console.WriteLine($"[SQL Server Invalid Operation]: {ex.Message}");
     Console.WriteLine(new string('=', 40));
 }

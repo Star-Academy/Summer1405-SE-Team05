@@ -1,4 +1,4 @@
-namespace t4;
+namespace CleanCode;
 
 public class ExpressionOperator
 {
@@ -10,12 +10,15 @@ public class ExpressionOperator
     public static readonly ExpressionOperator LessThanOrEqual = new("<=");
     public static readonly ExpressionOperator Like = new("LIKE");
 
-    public string Symbol { get; }
-
     private ExpressionOperator(string symbol)
     {
         Symbol = symbol;
     }
 
-    public override string ToString() => Symbol;
+    public string Symbol { get; }
+
+    public override string ToString()
+    {
+        return Symbol;
+    }
 }

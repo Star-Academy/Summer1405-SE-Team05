@@ -1,10 +1,10 @@
-namespace t4;
+namespace CleanCode;
 
 public class Query
 {
     public string? Table { get; private set; }
-    public List<string> Columns { get; private set; } = new();
-    public List<QueryClause> Clauses { get; private set; } = new();
+    public List<string> Columns { get; } = new();
+    public List<QueryClause> Clauses { get; } = new();
 
     public Query From(string table)
     {

@@ -1,3 +1,3 @@
-namespace t4;
+namespace CleanCode;
 
 public record QueryClause(WhereCondition Condition, LogicalOperator LogicalOp);
