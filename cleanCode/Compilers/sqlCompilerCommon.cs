@@ -2,7 +2,7 @@ using System.Text;
 
 namespace CleanCode;
 
-public class SqlCompilerCommon 
+internal sealed class SqlCompilerCommon 
 {
     public SqlInput Compile(
         Query query, 

@@ -2,7 +2,7 @@ namespace CleanCode;
 
 using System.Data.Common;
 
-public class DatabaseExecutor
+public sealed class DatabaseExecutor
 {
     private readonly ICompiler _compiler;
     private readonly DbConnection _connection;

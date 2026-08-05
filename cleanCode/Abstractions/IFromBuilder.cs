@@ -1,6 +1,6 @@
 namespace CleanCode;
 
-public interface IFromBuilder
+internal interface IFromBuilder
 {
     string Build(string? table, IParameterIdentifier paramIdentifier);
 }

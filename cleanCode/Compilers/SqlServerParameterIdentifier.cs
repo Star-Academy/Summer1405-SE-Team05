@@ -1,6 +1,6 @@
 namespace CleanCode;
 
-public class SqlServerParameterIdentifier : IParameterIdentifier
+internal sealed class SqlServerParameterIdentifier : IParameterIdentifier
 {
     public string ColumnSeparator => ", ";
 

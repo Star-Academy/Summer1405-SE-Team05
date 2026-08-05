@@ -1,6 +1,6 @@
 namespace CleanCode;
 
-public class SqlServerCompiler : ICompiler
+internal sealed class SqlServerCompiler : ICompiler
 {
     private readonly IParameterIdentifier _paramIdentifier;
     private readonly ISelectBuilder _selectBuilder;

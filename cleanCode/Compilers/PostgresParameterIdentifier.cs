@@ -1,6 +1,6 @@
 namespace CleanCode;
 
-public class PostgresParameterIdentifier : IParameterIdentifier
+internal sealed class PostgresParameterIdentifier : IParameterIdentifier
 {
     public string ColumnSeparator => ", ";
 

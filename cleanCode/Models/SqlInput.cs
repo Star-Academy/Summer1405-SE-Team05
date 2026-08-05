@@ -1,6 +1,6 @@
 namespace CleanCode;
 
-public class SqlInput
+public sealed class SqlInput
 {
     public SqlInput(string sql, List<object> bindings)
     {

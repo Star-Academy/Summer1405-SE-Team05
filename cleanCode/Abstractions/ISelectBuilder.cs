@@ -1,6 +1,6 @@
 namespace CleanCode;
 
-public interface ISelectBuilder
+internal interface ISelectBuilder
 {
     string Build(List<string> columns, IParameterIdentifier paramIdentifier);
 }

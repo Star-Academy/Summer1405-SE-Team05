@@ -1,10 +1,10 @@
 namespace CleanCode;
 
-public class Query
+public sealed class Query
 {
     public string? Table { get; private set; }
     public List<string> Columns { get; } = new();
-    public List<QueryClause> Clauses { get; } = new();
+    internal List<QueryClause> Clauses { get; } = new();
 
     public Query From(string table)
     {

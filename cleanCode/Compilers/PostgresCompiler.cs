@@ -1,6 +1,6 @@
 namespace CleanCode;
 
-public class PostgresCompiler : ICompiler
+internal sealed class PostgresCompiler : ICompiler
 {
     private readonly IParameterIdentifier _paramIdentifier;
     private readonly ISelectBuilder _selectBuilder;
