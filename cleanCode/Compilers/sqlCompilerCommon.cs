@@ -4,11 +4,18 @@ namespace CleanCode;
 
 internal sealed class SqlCompilerCommon : ICommonCompiler
 {
-    public SqlInput Compile(
-        Query query,
-        ISelectBuilder selectBuilder,
-        IFromBuilder fromBuilder,
-        IWhereBuilder whereBuilder)
+    private ISelectBuilder selectBuilder;
+    private IFromBuilder fromBuilder;
+    private IWhereBuilder whereBuilder;
+
+    public SqlCompilerCommon(IParameterIdentifier paramIdentifier , IExpressionOperator expressionOperator)
+    {
+        selectBuilder = new SqlSelectBuilder(paramIdentifier);
+        fromBuilder = new SqlFromBuilder(paramIdentifier);
+        whereBuilder = new SqlWhereBuilder(paramIdentifier , expressionOperator);
+    }
+
+    public SqlInput Compile(Query query)
     {
         var bindings = new List<object>();
         var stringBuilder = new StringBuilder();
