@@ -17,9 +17,9 @@ public class PostgresTestData : IEnumerable<object[]>
 
         yield return new object[]
         {
-            new Query().From("users").Select("id", "email").Where("is_active", ExpressionOperatorType.Equals, true),
+            new Query().From("users").Select("id", "email").Where("is_active", ExpressionOperatorType.Equals, false),
             "SELECT \"id\", \"email\" FROM \"users\" WHERE \"is_active\" = $1",
-            new object[] { true }
+            new object[] { false }
         };
 
         yield return new object[]
@@ -36,7 +36,6 @@ public class PostgresTestData : IEnumerable<object[]>
             Array.Empty<object>()
         };
 
-        // 2. بدون SELECT (باید * بزند) + بدون WHERE
         yield return new object[]
         {
             new Query().From("course"),
@@ -44,7 +43,6 @@ public class PostgresTestData : IEnumerable<object[]>
             Array.Empty<object>()
         };
 
-        // 3. تک ستون SELECT + بدون WHERE
         yield return new object[]
         {
             new Query().From("department").Select("name"),
@@ -52,7 +50,6 @@ public class PostgresTestData : IEnumerable<object[]>
             Array.Empty<object>()
         };
 
-        // 4. شرط Equals ساده با عدد
         yield return new object[]
         {
             new Query().From("student").Select("id").Where("id", ExpressionOperatorType.Equals, 101),
@@ -60,7 +57,6 @@ public class PostgresTestData : IEnumerable<object[]>
             new object[] { 101 }
         };
 
-        // 5. شرط Equals بدون ذکر عملگر (Overload پیش‌فرض)
         yield return new object[]
         {
             new Query().From("student").Select("firstname").Where("studentnumber", "991001"),
@@ -68,16 +64,14 @@ public class PostgresTestData : IEnumerable<object[]>
             new object[] { "991001" }
         };
 
-        // 6. شرط GreaterThanOrEqual
         yield return new object[]
         {
             new Query().From("student").Select("studentnumber", "firstname")
-                .Where("grade", ExpressionOperatorType.GreaterThanOrEqual, 16),
-            "SELECT \"studentnumber\", \"firstname\" FROM \"student\" WHERE \"grade\" >= $1",
-            new object[] { 16 }
+                .Where("grade", ExpressionOperatorType.LessThan, 19),
+            "SELECT \"studentnumber\", \"firstname\" FROM \"student\" WHERE \"grade\" < $1",
+            new object[] { 19 }
         };
 
-        // 7. شرط GreaterThan
         yield return new object[]
         {
             new Query().From("employee").Select("salary")
@@ -86,7 +80,6 @@ public class PostgresTestData : IEnumerable<object[]>
             new object[] { 5000 }
         };
 
-        // 8. شرط LessThan
         yield return new object[]
         {
             new Query().From("product").Select("title")
@@ -95,7 +88,6 @@ public class PostgresTestData : IEnumerable<object[]>
             new object[] { 100 }
         };
 
-        // 9. شرط LessThanOrEqual
         yield return new object[]
         {
             new Query().From("student").Select("grade")
@@ -104,7 +96,6 @@ public class PostgresTestData : IEnumerable<object[]>
             new object[] { 12 }
         };
 
-        // 10. شرط NotEquals
         yield return new object[]
         {
             new Query().From("users").Select("username")
@@ -113,7 +104,6 @@ public class PostgresTestData : IEnumerable<object[]>
             new object[] { "banned" }
         };
 
-        // 11. شرط LIKE
         yield return new object[]
         {
             new Query().From("student").Select("firstname")
@@ -122,7 +112,6 @@ public class PostgresTestData : IEnumerable<object[]>
             new object[] { "Ali%" }
         };
 
-        // 12. شرط بوولین (true)
         yield return new object[]
         {
             new Query().From("users").Select("id", "email")
@@ -131,7 +120,6 @@ public class PostgresTestData : IEnumerable<object[]>
             new object[] { true }
         };
 
-        // 13. شرط بوولین بدون SELECT (فراخوانی *)
         yield return new object[]
         {
             new Query().From("users")
@@ -140,7 +128,6 @@ public class PostgresTestData : IEnumerable<object[]>
             new object[] { false }
         };
 
-        // 14. دو شرط AND متوالی
         yield return new object[]
         {
             new Query().From("student").Select("studentnumber")
@@ -150,7 +137,6 @@ public class PostgresTestData : IEnumerable<object[]>
             new object[] { true, 20 }
         };
 
-        // 15. دو شرط با OrWhere
         yield return new object[]
         {
             new Query().From("orders").Select("total")
@@ -160,7 +146,6 @@ public class PostgresTestData : IEnumerable<object[]>
             new object[] { "Pending", "Processing" }
         };
 
-        // 16. ترکیب چند شرط بازه‌ای (مثلاً نمره بین ۱۲ تا ۱۸)
         yield return new object[]
         {
             new Query().From("student").Select("grade")
@@ -170,7 +155,6 @@ public class PostgresTestData : IEnumerable<object[]>
             new object[] { 12, 18 }
         };
 
-        // 17. ترکیبی از AND و OR با عملگرهای مختلف
         yield return new object[]
         {
             new Query().From("employee").Select("name", "salary")
@@ -180,7 +164,6 @@ public class PostgresTestData : IEnumerable<object[]>
             new object[] { 5, 10000 }
         };
 
-        // 18. انتخاب چند ستون + OrWhere بدون عملگر صریح
         yield return new object[]
         {
             new Query().From("course").Select("id", "title", "unit")
@@ -190,7 +173,6 @@ public class PostgresTestData : IEnumerable<object[]>
             new object[] { 3, 4 }
         };
 
-        // 19. سه شرط متوالی با عملگرهای ترکیبی
         yield return new object[]
         {
             new Query().From("student").Select("firstname", "lastname")
@@ -201,7 +183,6 @@ public class PostgresTestData : IEnumerable<object[]>
             new object[] { 15, true, true }
         };
 
-        // 20. کوئری با رشته متنی شامل کاراکترهای خاص
         yield return new object[]
         {
             new Query().From("logs").Select("message")
