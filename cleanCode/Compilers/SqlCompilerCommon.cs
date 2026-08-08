@@ -2,20 +2,20 @@ using System.Text;
 
 namespace CleanCode;
 
-internal sealed class SqlCompilerCommon : ICommonCompiler
+internal sealed class SqlCompilerCommon : ISqlCommonCompiler
 {
-    private ISelectBuilder selectBuilder;
-    private IFromBuilder fromBuilder;
-    private IWhereBuilder whereBuilder;
+    private readonly IFromBuilder fromBuilder;
+    private readonly ISelectBuilder selectBuilder;
+    private readonly IWhereBuilder whereBuilder;
 
-    public SqlCompilerCommon(IParameterIdentifier paramIdentifier , IExpressionOperator expressionOperator)
+    public SqlCompilerCommon(IParameterIdentifier paramIdentifier, IExpressionOperator expressionOperator)
     {
         selectBuilder = new SqlSelectBuilder(paramIdentifier);
         fromBuilder = new SqlFromBuilder(paramIdentifier);
-        whereBuilder = new SqlWhereBuilder(paramIdentifier , expressionOperator);
+        whereBuilder = new SqlWhereBuilder(paramIdentifier, expressionOperator);
     }
 
-    public SqlInput Compile(Query query)
+    public DataBaseInput Compile(Query query)
     {
         var bindings = new List<object>();
         var stringBuilder = new StringBuilder();
@@ -30,6 +30,6 @@ internal sealed class SqlCompilerCommon : ICommonCompiler
             stringBuilder.Append(whereBuilder.Build(query.QueryClauses, bindings));
         }
 
-        return new SqlInput(stringBuilder.ToString(), bindings);
+        return new DataBaseInput(stringBuilder.ToString(), bindings);
     }
 }

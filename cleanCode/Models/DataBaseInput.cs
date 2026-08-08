@@ -1,8 +1,8 @@
 namespace CleanCode;
 
-public sealed class SqlInput
+public sealed class DataBaseInput
 {
-    public SqlInput(string sql, List<object> bindings)
+    public DataBaseInput(string sql, List<object> bindings)
     {
         QueryString = sql;
         Bindings = bindings.AsReadOnly();

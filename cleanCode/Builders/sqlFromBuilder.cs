@@ -8,6 +8,7 @@ internal sealed class SqlFromBuilder : IFromBuilder
     {
         _paramIdentifier = paramIdentifier ?? throw new ArgumentNullException(nameof(paramIdentifier));
     }
+
     public string Build(string? table)
     {
         if (string.IsNullOrWhiteSpace(table))

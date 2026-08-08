@@ -2,5 +2,5 @@ namespace CleanCode;
 
 public interface IExpressionOperator
 {
-    string GetSymbol(ExpressionOperatorType operatorType);
+    string GetSymbol(ExpressionOperatorType expressionOperatorType);
 }

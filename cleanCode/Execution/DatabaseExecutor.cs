@@ -19,7 +19,7 @@ public sealed class DatabaseExecutor : IExecuter
         ArgumentNullException.ThrowIfNull(query);
         ArgumentNullException.ThrowIfNull(mapper);
 
-        EnsureConnectionIsOpen();
+        if (_dbConnection.State != ConnectionState.Open) _dbConnection.Open();
 
         using var command = CreateCommand(query);
         using var reader = command.ExecuteReader();
@@ -59,12 +59,8 @@ public sealed class DatabaseExecutor : IExecuter
         return command;
     }
 
-    private void EnsureConnectionIsOpen()
-    {
-        if (_dbConnection.State != ConnectionState.Open) _dbConnection.Open();
-    }
 
-    private void PrintSql(SqlInput result)
+    private void PrintSql(DataBaseInput result)
     {
         Console.WriteLine($"Generated SQL: {result.QueryString}");
         Console.WriteLine("Bindings: " + string.Join(", ", result.Bindings));

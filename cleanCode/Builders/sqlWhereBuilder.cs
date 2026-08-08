@@ -4,8 +4,8 @@ namespace CleanCode;
 
 internal sealed class SqlWhereBuilder : IWhereBuilder
 {
-    private readonly IParameterIdentifier _paramIdentifier;
     private readonly IExpressionOperator _expressionOperator;
+    private readonly IParameterIdentifier _paramIdentifier;
 
     public SqlWhereBuilder(
         IParameterIdentifier paramIdentifier,
@@ -30,11 +30,9 @@ internal sealed class SqlWhereBuilder : IWhereBuilder
             var condition = clause.WhereCondition;
 
             if (i > 0)
-            {
                 stringBuilder.Append(' ')
-                             .Append(_paramIdentifier.GetLogicalOperatorString(clause.LogicalOperator))
-                             .Append(' ');
-            }
+                    .Append(_paramIdentifier.GetLogicalOperatorString(clause.LogicalOperator))
+                    .Append(' ');
 
             var column = _paramIdentifier.WrapIdentifier(condition.Column);
             var operatorSymbol = _expressionOperator.GetSymbol(condition.Operator);
@@ -42,10 +40,10 @@ internal sealed class SqlWhereBuilder : IWhereBuilder
             var processedValue = _paramIdentifier.TransformValue(condition.Value);
 
             stringBuilder.Append(column)
-                         .Append(' ')
-                         .Append(operatorSymbol)
-                         .Append(' ')
-                         .Append(paramPlaceholder);
+                .Append(' ')
+                .Append(operatorSymbol)
+                .Append(' ')
+                .Append(paramPlaceholder);
 
             bindings.Add(processedValue);
         }
