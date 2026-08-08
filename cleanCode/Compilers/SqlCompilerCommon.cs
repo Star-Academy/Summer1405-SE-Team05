@@ -8,11 +8,11 @@ internal sealed class SqlCompilerCommon : ISqlCommonCompiler
     private readonly ISelectBuilder selectBuilder;
     private readonly IWhereBuilder whereBuilder;
 
-    public SqlCompilerCommon(IParameterIdentifier paramIdentifier, IExpressionOperator expressionOperator)
+    public SqlCompilerCommon(IFromBuilder fromBuilder, ISelectBuilder selectBuilder, IWhereBuilder whereBuilder)
     {
-        selectBuilder = new SqlSelectBuilder(paramIdentifier);
-        fromBuilder = new SqlFromBuilder(paramIdentifier);
-        whereBuilder = new SqlWhereBuilder(paramIdentifier, expressionOperator);
+        this.fromBuilder = fromBuilder;
+        this.selectBuilder = selectBuilder;
+        this.whereBuilder = whereBuilder;
     }
 
     public DataBaseInput Compile(Query query)
