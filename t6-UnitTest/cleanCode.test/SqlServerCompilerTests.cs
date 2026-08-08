@@ -18,7 +18,7 @@ public class SqlServerCompilerTests
         var selectBuilder = new SqlSelectBuilder(sqlServerParameterIdentifier);
         var commonCompiler = new SqlCompilerCommon(fromBuilder, selectBuilder, whereBuilder);
 
-        var compiler = new SqlServerCompiler(
+        var sut = new SqlServerCompiler(
             sqlServerParameterIdentifier,
             commonCompiler
         );
@@ -29,7 +29,7 @@ public class SqlServerCompilerTests
             .Where("Grade", ExpressionOperatorType.GreaterThanOrEqual, 16.0);
 
         // Act
-        var result = compiler.Compile(query);
+        var result = sut.Compile(query);
 
         // Assert
         Assert.Equal("SELECT [StudentNumber], [FirstName] FROM [Student] WHERE [Grade] >= @p0",
@@ -52,13 +52,13 @@ public class SqlServerCompilerTests
             .Compile(query)
             .Returns(expectedResult);
 
-        var compiler = new SqlServerCompiler(
+        var sut = new SqlServerCompiler(
             substituteParamIdentifier,
             substituteCommonCompiler
         );
 
         // Act
-        var result = compiler.Compile(query);
+        var result = sut.Compile(query);
 
         // Assert
         Assert.Equal(expectedResult.QueryString, result.QueryString);
@@ -87,9 +87,9 @@ public class SqlServerCompilerTests
     {
         var mockParamIdentifier = Substitute.For<IParameterIdentifier>();
         var mockCommonCompiler = Substitute.For<ISqlCommonCompiler>();
-        var compiler = new SqlServerCompiler(mockParamIdentifier, mockCommonCompiler);
+        var sut = new SqlServerCompiler(mockParamIdentifier, mockCommonCompiler);
 
-        Assert.Throws<ArgumentNullException>(() => compiler.Compile(null!));
+        Assert.Throws<ArgumentNullException>(() => sut.Compile(null!));
     }
 
     [Fact]
@@ -99,8 +99,8 @@ public class SqlServerCompilerTests
         mockParamIdentifier.FormatParameterName(1).Returns("@p1");
         var mockCommonCompiler = Substitute.For<ISqlCommonCompiler>();
 
-        var compiler = new SqlServerCompiler(mockParamIdentifier, mockCommonCompiler);
-        var result = compiler.FormatParameterName(1);
+        var sut = new SqlServerCompiler(mockParamIdentifier, mockCommonCompiler);
+        var result = sut.FormatParameterName(1);
 
         Assert.Equal("@p1", result);
         mockParamIdentifier.Received(1).FormatParameterName(1);
@@ -121,12 +121,12 @@ public class SqlServerCompilerTests
         var selectBuilder = new SqlSelectBuilder(sqlServerParameterIdentifier);
         var commonCompiler = new SqlCompilerCommon(fromBuilder, selectBuilder, whereBuilder);
 
-        var compiler = new SqlServerCompiler(
+        var sut = new SqlServerCompiler(
             sqlServerParameterIdentifier,
             commonCompiler);
 
         // Act
-        var result = compiler.Compile(query);
+        var result = sut.Compile(query);
 
         // Assert
         Assert.Equal(expectedSql, result.QueryString);

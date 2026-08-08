@@ -8,26 +8,20 @@ public class ParameterIdentifierTests
     [Fact]
     public void PostgresParameterIdentifier_FormatParameterName_Should_Return_Empty_String()
     {
-        // Arrange
-        var identifier = new PostgresParameterIdentifier();
+        var sut = new PostgresParameterIdentifier();
 
-        // Act
-        var result = identifier.FormatParameterName(0);
+        var result = sut.FormatParameterName(0);
 
-        // Assert
         Assert.Equal("", result);
     }
 
     [Fact]
     public void SqlServerParameterIdentifier_FormatParameterName_Should_Return_Formatted_Name()
     {
-        // Arrange
-        var identifier = new SqlServerParameterIdentifier();
+        var sut = new SqlServerParameterIdentifier();
 
-        // Act
-        var result = identifier.FormatParameterName(0);
+        var result = sut.FormatParameterName(0);
 
-        // Assert
         Assert.Equal("@p0", result);
     }
 }

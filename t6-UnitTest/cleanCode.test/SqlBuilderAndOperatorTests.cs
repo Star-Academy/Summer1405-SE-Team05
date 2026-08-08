@@ -20,17 +20,17 @@ public class SqlBuilderAndOperatorTests
     public void SqlFromBuilder_Build_NullOrWhiteSpaceTable_ThrowsArgumentException(string? tableName)
     {
         var mockParamIdentifier = Substitute.For<IParameterIdentifier>();
-        var builder = new SqlFromBuilder(mockParamIdentifier);
+        var sut = new SqlFromBuilder(mockParamIdentifier);
 
-        Assert.Throws<ArgumentException>(() => builder.Build(tableName));
+        Assert.Throws<ArgumentException>(() => sut.Build(tableName));
     }
 
     [Fact]
     public void SqlExpressionOperator_GetSymbol_InvalidOperatorType_ThrowsArgumentOutOfRangeException()
     {
-        var op = new SqlExpressionOperator();
+        var sut = new SqlExpressionOperator();
         var invalidType = (ExpressionOperatorType)999;
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => op.GetSymbol(invalidType));
+        Assert.Throws<ArgumentOutOfRangeException>(() => sut.GetSymbol(invalidType));
     }
 }

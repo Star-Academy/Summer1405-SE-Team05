@@ -7,7 +7,6 @@ public class SqlServerTestData : IEnumerable<object[]>
 {
     public IEnumerator<object[]> GetEnumerator()
     {
-        // 1. SELECT ستون‌های خاص + WHERE با شرط مساوی برای پروپرتی‌های موجود
         yield return new object[]
         {
             new Query().From("Student").Select("StudentNumber", "FirstName", "LastName")
@@ -16,7 +15,6 @@ public class SqlServerTestData : IEnumerable<object[]>
             new object[] { 1 }
         };
 
-        // 2. SELECT کامل (*) + شرط GreaterThanOrEqual روی Grade
         yield return new object[]
         {
             new Query().From("Student")
@@ -25,7 +23,6 @@ public class SqlServerTestData : IEnumerable<object[]>
             new object[] { 16.0 }
         };
 
-        // 3. انتخاب ستون‌ها بدون WHERE
         yield return new object[]
         {
             new Query().From("Student").Select("StudentNumber", "Grade"),
@@ -33,7 +30,6 @@ public class SqlServerTestData : IEnumerable<object[]>
             Array.Empty<object>()
         };
 
-        // 4. بدون SELECT (علامت *) + بدون WHERE
         yield return new object[]
         {
             new Query().From("Student"),
@@ -41,7 +37,6 @@ public class SqlServerTestData : IEnumerable<object[]>
             Array.Empty<object>()
         };
 
-        // 5. تک ستون SELECT + بدون WHERE
         yield return new object[]
         {
             new Query().From("Student").Select("FirstName"),
@@ -49,7 +44,6 @@ public class SqlServerTestData : IEnumerable<object[]>
             Array.Empty<object>()
         };
 
-        // 6. شرط Equals روی StudentNumber با Overload پیش‌فرض
         yield return new object[]
         {
             new Query().From("Student").Select("FirstName", "LastName")
@@ -58,7 +52,6 @@ public class SqlServerTestData : IEnumerable<object[]>
             new object[] { "00100450" }
         };
 
-        // 7. شرط GreaterThan روی LeftUnitsCount
         yield return new object[]
         {
             new Query().From("Student").Select("StudentNumber", "LeftUnitsCount")
@@ -67,7 +60,6 @@ public class SqlServerTestData : IEnumerable<object[]>
             new object[] { 100 }
         };
 
-        // 8. شرط LessThan روی Grade
         yield return new object[]
         {
             new Query().From("Student").Select("StudentNumber", "Grade")
@@ -76,7 +68,6 @@ public class SqlServerTestData : IEnumerable<object[]>
             new object[] { 12.0 }
         };
 
-        // 9. شرط LessThanOrEqual روی LeftUnitsCount
         yield return new object[]
         {
             new Query().From("Student").Select("FirstName", "LastName")
@@ -85,7 +76,6 @@ public class SqlServerTestData : IEnumerable<object[]>
             new object[] { 0 }
         };
 
-        // 10. شرط NotEquals روی IsMale
         yield return new object[]
         {
             new Query().From("Student").Select("StudentNumber")
@@ -94,7 +84,6 @@ public class SqlServerTestData : IEnumerable<object[]>
             new object[] { 0 }
         };
 
-        // 11. شرط LIKE روی FirstName
         yield return new object[]
         {
             new Query().From("Student").Select("FirstName", "LastName")
@@ -103,7 +92,6 @@ public class SqlServerTestData : IEnumerable<object[]>
             new object[] { "علی%" }
         };
 
-        // 12. شرط Equals روی LastName
         yield return new object[]
         {
             new Query().From("Student").Select("StudentNumber", "Grade")
@@ -112,7 +100,6 @@ public class SqlServerTestData : IEnumerable<object[]>
             new object[] { "رضایی" }
         };
 
-        // 13. شرط Equals روی DateOfBirth
         yield return new object[]
         {
             new Query().From("Student")
@@ -121,7 +108,6 @@ public class SqlServerTestData : IEnumerable<object[]>
             new object[] { "2002-01-09T20:30:00.000Z" }
         };
 
-        // 14. دو شرط AND متوالی روی IsMale و Grade
         yield return new object[]
         {
             new Query().From("Student").Select("StudentNumber")
@@ -131,7 +117,6 @@ public class SqlServerTestData : IEnumerable<object[]>
             new object[] { 1, 15.0 }
         };
 
-        // 15. دو شرط با OrWhere روی LastName
         yield return new object[]
         {
             new Query().From("Student").Select("FirstName", "Grade")
@@ -141,7 +126,6 @@ public class SqlServerTestData : IEnumerable<object[]>
             new object[] { "موسوی", "احمدی" }
         };
 
-        // 16. شرط بازه‌ای برای معدل (Grade) بین ۱۲ تا ۱۸
         yield return new object[]
         {
             new Query().From("Student").Select("StudentNumber", "Grade")
@@ -151,7 +135,6 @@ public class SqlServerTestData : IEnumerable<object[]>
             new object[] { 12.0, 18.0 }
         };
 
-        // 17. ترکیب AND و OR برای جنسیت و units مانده
         yield return new object[]
         {
             new Query().From("Student").Select("FirstName", "LastName")
@@ -161,7 +144,6 @@ public class SqlServerTestData : IEnumerable<object[]>
             new object[] { 0, 100 }
         };
 
-        // 18. استفاده از OrWhere بدون عملگر صریح روی LeftUnitsCount
         yield return new object[]
         {
             new Query().From("Student").Select("StudentNumber", "FirstName")
@@ -171,7 +153,6 @@ public class SqlServerTestData : IEnumerable<object[]>
             new object[] { 0, 12 }
         };
 
-        // 19. سه شرط متوالی ترکیبی روی Grade، IsMale و LeftUnitsCount
         yield return new object[]
         {
             new Query().From("Student").Select("FirstName", "LastName")
@@ -182,7 +163,6 @@ public class SqlServerTestData : IEnumerable<object[]>
             new object[] { 15.0, 1, 30 }
         };
 
-        // 20. جستجوی پیشوند شماره دانشجویی با LIKE
         yield return new object[]
         {
             new Query().From("Student").Select("StudentNumber", "Grade")

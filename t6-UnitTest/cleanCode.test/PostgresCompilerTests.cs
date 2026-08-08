@@ -18,7 +18,7 @@ public class PostgresCompilerTests
         var selectBuilder = new SqlSelectBuilder(postgresParameterIdentifier);
         var commonCompiler = new SqlCompilerCommon(fromBuilder, selectBuilder, whereBuilder);
 
-        var compiler = new PostgresCompiler(
+        var sut = new PostgresCompiler(
             postgresParameterIdentifier,
             commonCompiler
         );
@@ -29,7 +29,7 @@ public class PostgresCompilerTests
             .Where("grade", ExpressionOperatorType.GreaterThanOrEqual, 16);
 
         // Act
-        var result = compiler.Compile(query);
+        var result = sut.Compile(query);
 
         // Assert
         Assert.Equal("SELECT \"studentnumber\", \"firstname\" FROM \"student\" WHERE \"grade\" >= $1",
@@ -52,13 +52,13 @@ public class PostgresCompilerTests
             .Compile(query)
             .Returns(expectedResult);
 
-        var compiler = new PostgresCompiler(
+        var sut = new PostgresCompiler(
             substituteParamIdentifier,
             substituteCommonCompiler
         );
 
         // Act
-        var result = compiler.Compile(query);
+        var result = sut.Compile(query);
 
         // Assert
         Assert.Equal(expectedResult.QueryString, result.QueryString);
@@ -82,7 +82,7 @@ public class PostgresCompilerTests
         var selectBuilder = new SqlSelectBuilder(postgresParameterIdentifier);
         var commonCompiler = new SqlCompilerCommon(fromBuilder, selectBuilder, whereBuilder);
 
-        var compiler = new PostgresCompiler(pgIdentifier, commonCompiler);
+        var sut = new PostgresCompiler(pgIdentifier, commonCompiler);
 
         var query = new Query()
             .From("student")
@@ -90,7 +90,7 @@ public class PostgresCompilerTests
             .Where("grade", ExpressionOperatorType.GreaterThanOrEqual, 16);
 
         // Act
-        var result = compiler.Compile(query);
+        var result = sut.Compile(query);
 
         // Assert
         Assert.Equal("SELECT \"studentnumber\", \"firstname\" FROM \"student\" WHERE \"grade\" >= $1",
@@ -120,9 +120,9 @@ public class PostgresCompilerTests
     {
         var mockParamIdentifier = Substitute.For<IParameterIdentifier>();
         var mockCommonCompiler = Substitute.For<ISqlCommonCompiler>();
-        var compiler = new PostgresCompiler(mockParamIdentifier, mockCommonCompiler);
+        var sut = new PostgresCompiler(mockParamIdentifier, mockCommonCompiler);
 
-        Assert.Throws<ArgumentNullException>(() => compiler.Compile(null!));
+        Assert.Throws<ArgumentNullException>(() => sut.Compile(null!));
     }
 
     [Fact]
@@ -132,8 +132,8 @@ public class PostgresCompilerTests
         mockParamIdentifier.FormatParameterName(2).Returns("$3");
         var mockCommonCompiler = Substitute.For<ISqlCommonCompiler>();
 
-        var compiler = new PostgresCompiler(mockParamIdentifier, mockCommonCompiler);
-        var result = compiler.FormatParameterName(2);
+        var sut = new PostgresCompiler(mockParamIdentifier, mockCommonCompiler);
+        var result = sut.FormatParameterName(2);
 
         Assert.Equal("$3", result);
         mockParamIdentifier.Received(1).FormatParameterName(2);
@@ -154,12 +154,12 @@ public class PostgresCompilerTests
         var selectBuilder = new SqlSelectBuilder(postgresParameterIdentifier);
         var commonCompiler = new SqlCompilerCommon(fromBuilder, selectBuilder, whereBuilder);
 
-        var compiler = new PostgresCompiler(
+        var sut = new PostgresCompiler(
             postgresParameterIdentifier,
             commonCompiler);
 
         // Act
-        var result = compiler.Compile(query);
+        var result = sut.Compile(query);
 
         // Assert
         Assert.Equal(expectedSql, result.QueryString);
