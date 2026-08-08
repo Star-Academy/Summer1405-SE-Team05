@@ -35,7 +35,6 @@ public class PostgresCompilerMockTests
         Assert.Single(result.Bindings);
         Assert.Equal(16, result.Bindings[0]);
 
-        // بررسی فراخوانی متد ماک
         mockOperator.Received(1).GetSymbol(ExpressionOperatorType.GreaterThanOrEqual);
     }
 }
