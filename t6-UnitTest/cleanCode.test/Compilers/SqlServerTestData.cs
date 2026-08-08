@@ -1,8 +1,7 @@
 using System.Collections;
 using CleanCode;
 
-namespace cleanCode.test;
-
+namespace cleanCode.test.Compilers;
 public class SqlServerTestData : IEnumerable<object[]>
 {
     public IEnumerator<object[]> GetEnumerator()

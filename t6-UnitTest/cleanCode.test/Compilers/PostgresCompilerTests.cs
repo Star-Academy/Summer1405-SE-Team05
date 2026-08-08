@@ -5,13 +5,13 @@ using FluentAssertions;
 using NSubstitute;
 using Xunit;
 
-namespace cleanCode.test;
-
+namespace cleanCode.test.Compilers;
 public class PostgresCompilerTests
 {
     [Fact]
     public void PostgresCompiler_Should_Generate_Correct_SqlInput()
     {
+        // Arrange
         var expressionOperator = new SqlExpressionOperator();
         var postgresParameterIdentifier = new PostgresParameterIdentifier();
         var fromBuilder = new SqlFromBuilder(postgresParameterIdentifier);
@@ -29,8 +29,10 @@ public class PostgresCompilerTests
             .Select("studentnumber", "firstname")
             .Where("grade", ExpressionOperatorType.GreaterThanOrEqual, 16);
 
+        // Act
         var result = sut.Compile(query);
 
+        // Assert
         result.QueryString.Should().Be("SELECT \"studentnumber\", \"firstname\" FROM \"student\" WHERE \"grade\" >= $1");
         result.Bindings.Should().ContainSingle().Which.Should().Be(16);
     }
@@ -38,6 +40,7 @@ public class PostgresCompilerTests
     [Fact]
     public void PostgresCompiler_Should_Delegate_Compilation_To_CommonCompiler()
     {
+        // Arrange
         var substituteParamIdentifier = Substitute.For<IParameterIdentifier>();
         var substituteCommonCompiler = Substitute.For<ISqlCommonCompiler>();
 
@@ -53,8 +56,10 @@ public class PostgresCompilerTests
             substituteCommonCompiler
         );
 
+        // Act
         var result = sut.Compile(query);
 
+        // Assert
         result.QueryString.Should().Be(expectedResult.QueryString);
 
         substituteCommonCompiler
@@ -65,6 +70,7 @@ public class PostgresCompilerTests
     [Fact]
     public void PostgresCompiler_Mocked_ExpressionOperator()
     {
+        // Arrange
         var pgIdentifier = new PostgresParameterIdentifier();
 
         var mockOperator = Substitute.For<IExpressionOperator>();
@@ -82,8 +88,10 @@ public class PostgresCompilerTests
             .Select("studentnumber", "firstname")
             .Where("grade", ExpressionOperatorType.GreaterThanOrEqual, 16);
 
+        // Act
         var result = sut.Compile(query);
 
+        // Assert
         result.QueryString.Should().Be("SELECT \"studentnumber\", \"firstname\" FROM \"student\" WHERE \"grade\" >= $1");
         result.Bindings.Should().ContainSingle().Which.Should().Be(16);
 
@@ -93,45 +101,58 @@ public class PostgresCompilerTests
     [Fact]
     public void PostgresCompiler_Constructor_NullParamIdentifier_ThrowsArgumentNullException()
     {
+        // Arrange
         var mockCommonCompiler = Substitute.For<ISqlCommonCompiler>();
 
+        // Act
         Action act = () => new PostgresCompiler(null!, mockCommonCompiler);
 
+        // Assert
         act.Should().Throw<ArgumentNullException>();
     }
 
     [Fact]
     public void PostgresCompiler_Constructor_NullCommonCompiler_ThrowsArgumentNullException()
     {
+        // Arrange
         var mockParamIdentifier = Substitute.For<IParameterIdentifier>();
 
+        // Act
         Action act = () => new PostgresCompiler(mockParamIdentifier, null!);
 
+        // Assert
         act.Should().Throw<ArgumentNullException>();
     }
 
     [Fact]
     public void PostgresCompiler_Compile_NullQuery_ThrowsArgumentNullException()
     {
+        // Arrange
         var mockParamIdentifier = Substitute.For<IParameterIdentifier>();
         var mockCommonCompiler = Substitute.For<ISqlCommonCompiler>();
         var sut = new PostgresCompiler(mockParamIdentifier, mockCommonCompiler);
 
+        // Act
         Action act = () => sut.Compile(null!);
 
+        // Assert
         act.Should().Throw<ArgumentNullException>();
     }
 
     [Fact]
     public void PostgresCompiler_FormatParameterName_Calls_ParamIdentifier()
     {
+        // Arrange
         var mockParamIdentifier = Substitute.For<IParameterIdentifier>();
         mockParamIdentifier.FormatParameterName(2).Returns("$3");
         var mockCommonCompiler = Substitute.For<ISqlCommonCompiler>();
 
         var sut = new PostgresCompiler(mockParamIdentifier, mockCommonCompiler);
+
+        // Act
         var result = sut.FormatParameterName(2);
 
+        // Assert
         result.Should().Be("$3");
         mockParamIdentifier.Received(1).FormatParameterName(2);
     }
@@ -143,6 +164,7 @@ public class PostgresCompilerTests
         string expectedSql,
         object[] expectedBindings)
     {
+        // Arrange
         var expressionOperator = new SqlExpressionOperator();
         var postgresParameterIdentifier = new PostgresParameterIdentifier();
         var fromBuilder = new SqlFromBuilder(postgresParameterIdentifier);
@@ -154,8 +176,10 @@ public class PostgresCompilerTests
             postgresParameterIdentifier,
             commonCompiler);
 
+        // Act
         var result = sut.Compile(query);
 
+        // Assert
         result.QueryString.Should().Be(expectedSql);
         result.Bindings.Should().Equal(expectedBindings);
     }

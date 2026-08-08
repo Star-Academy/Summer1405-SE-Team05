@@ -5,13 +5,13 @@ using FluentAssertions;
 using NSubstitute;
 using Xunit;
 
-namespace cleanCode.test;
-
+namespace cleanCode.test.Compilers;
 public class SqlServerCompilerTests
 {
     [Fact]
     public void SqlServerCompiler_Should_Generate_Correct_SqlInput()
     {
+        // Arrange
         var expressionOperator = new SqlExpressionOperator();
         var sqlServerParameterIdentifier = new SqlServerParameterIdentifier();
         var fromBuilder = new SqlFromBuilder(sqlServerParameterIdentifier);
@@ -29,8 +29,10 @@ public class SqlServerCompilerTests
             .Select("StudentNumber", "FirstName")
             .Where("Grade", ExpressionOperatorType.GreaterThanOrEqual, 16.0);
 
+        // Act
         var result = sut.Compile(query);
 
+        // Assert
         result.QueryString.Should().Be("SELECT [StudentNumber], [FirstName] FROM [Student] WHERE [Grade] >= @p0");
         result.Bindings.Should().ContainSingle().Which.Should().Be(16.0);
     }
@@ -38,6 +40,7 @@ public class SqlServerCompilerTests
     [Fact]
     public void SqlServerCompiler_Should_Delegate_Compilation_To_CommonCompiler()
     {
+        // Arrange
         var substituteParamIdentifier = Substitute.For<IParameterIdentifier>();
         var substituteCommonCompiler = Substitute.For<ISqlCommonCompiler>();
 
@@ -53,8 +56,10 @@ public class SqlServerCompilerTests
             substituteCommonCompiler
         );
 
+        // Act
         var result = sut.Compile(query);
 
+        // Assert
         result.QueryString.Should().Be(expectedResult.QueryString);
 
         substituteCommonCompiler
@@ -65,45 +70,58 @@ public class SqlServerCompilerTests
     [Fact]
     public void SqlServerCompiler_Constructor_NullParamIdentifier_ThrowsArgumentNullException()
     {
+        // Arrange
         var mockCommonCompiler = Substitute.For<ISqlCommonCompiler>();
 
+        // Act
         Action act = () => new SqlServerCompiler(null!, mockCommonCompiler);
 
+        // Assert
         act.Should().Throw<ArgumentNullException>();
     }
 
     [Fact]
     public void SqlServerCompiler_Constructor_NullCommonCompiler_ThrowsArgumentNullException()
     {
+        // Arrange
         var mockParamIdentifier = Substitute.For<IParameterIdentifier>();
 
+        // Act
         Action act = () => new SqlServerCompiler(mockParamIdentifier, null!);
 
+        // Assert
         act.Should().Throw<ArgumentNullException>();
     }
 
     [Fact]
     public void SqlServerCompiler_Compile_NullQuery_ThrowsArgumentNullException()
     {
+        // Arrange
         var mockParamIdentifier = Substitute.For<IParameterIdentifier>();
         var mockCommonCompiler = Substitute.For<ISqlCommonCompiler>();
         var sut = new SqlServerCompiler(mockParamIdentifier, mockCommonCompiler);
 
+        // Act
         Action act = () => sut.Compile(null!);
 
+        // Assert
         act.Should().Throw<ArgumentNullException>();
     }
 
     [Fact]
     public void SqlServerCompiler_FormatParameterName_Calls_ParamIdentifier()
     {
+        // Arrange
         var mockParamIdentifier = Substitute.For<IParameterIdentifier>();
         mockParamIdentifier.FormatParameterName(1).Returns("@p1");
         var mockCommonCompiler = Substitute.For<ISqlCommonCompiler>();
 
         var sut = new SqlServerCompiler(mockParamIdentifier, mockCommonCompiler);
+
+        // Act
         var result = sut.FormatParameterName(1);
 
+        // Assert
         result.Should().Be("@p1");
         mockParamIdentifier.Received(1).FormatParameterName(1);
     }
@@ -115,6 +133,7 @@ public class SqlServerCompilerTests
         string expectedSql,
         object[] expectedBindings)
     {
+        // Arrange
         var expressionOperator = new SqlExpressionOperator();
         var sqlServerParameterIdentifier = new SqlServerParameterIdentifier();
         var fromBuilder = new SqlFromBuilder(sqlServerParameterIdentifier);
@@ -126,8 +145,10 @@ public class SqlServerCompilerTests
             sqlServerParameterIdentifier,
             commonCompiler);
 
+        // Act
         var result = sut.Compile(query);
 
+        // Assert
         result.QueryString.Should().Be(expectedSql);
         result.Bindings.Should().Equal(expectedBindings);
     }

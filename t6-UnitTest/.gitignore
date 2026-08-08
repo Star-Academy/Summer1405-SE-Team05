@@ -482,3 +482,4 @@ $RECYCLE.BIN/
 *.swp
 coveragereport/
 cleanCode.test/SimpleTests.cs
+TestResults/
