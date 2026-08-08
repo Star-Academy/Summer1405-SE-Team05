@@ -10,6 +10,10 @@ internal sealed class SqlCompilerCommon : ISqlCommonCompiler
 
     public SqlCompilerCommon(IFromBuilder fromBuilder, ISelectBuilder selectBuilder, IWhereBuilder whereBuilder)
     {
+        ArgumentNullException.ThrowIfNull(fromBuilder);
+        ArgumentNullException.ThrowIfNull(selectBuilder);
+        ArgumentNullException.ThrowIfNull(whereBuilder);
+
         this.fromBuilder = fromBuilder;
         this.selectBuilder = selectBuilder;
         this.whereBuilder = whereBuilder;
@@ -17,6 +21,8 @@ internal sealed class SqlCompilerCommon : ISqlCommonCompiler
 
     public DataBaseInput Compile(Query query)
     {
+        ArgumentNullException.ThrowIfNull(query);
+
         var bindings = new List<object>();
         var stringBuilder = new StringBuilder();
 
