@@ -1,4 +1,5 @@
 using CleanCode;
+using FluentAssertions;
 using Xunit;
 
 namespace cleanCode.test;
@@ -12,7 +13,7 @@ public class ParameterIdentifierTests
 
         var result = sut.FormatParameterName(0);
 
-        Assert.Equal("", result);
+        result.Should().BeEmpty();
     }
 
     [Fact]
@@ -22,6 +23,6 @@ public class ParameterIdentifierTests
 
         var result = sut.FormatParameterName(0);
 
-        Assert.Equal("@p0", result);
+        result.Should().Be("@p0");
     }
 }
