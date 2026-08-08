@@ -1,5 +1,6 @@
 using System;
 using CleanCode;
+using FluentAssertions;
 using NSubstitute;
 using Xunit;
 
@@ -10,7 +11,9 @@ public class SqlBuilderAndOperatorTests
     [Fact]
     public void SqlFromBuilder_Constructor_NullParamIdentifier_ThrowsArgumentNullException()
     {
-        Assert.Throws<ArgumentNullException>(() => new SqlFromBuilder(null!));
+        Action act = () => new SqlFromBuilder(null!);
+
+        act.Should().Throw<ArgumentNullException>();
     }
 
     [Theory]
@@ -22,7 +25,9 @@ public class SqlBuilderAndOperatorTests
         var mockParamIdentifier = Substitute.For<IParameterIdentifier>();
         var sut = new SqlFromBuilder(mockParamIdentifier);
 
-        Assert.Throws<ArgumentException>(() => sut.Build(tableName));
+        Action act = () => sut.Build(tableName);
+
+        act.Should().Throw<ArgumentException>();
     }
 
     [Fact]
@@ -31,6 +36,8 @@ public class SqlBuilderAndOperatorTests
         var sut = new SqlExpressionOperator();
         var invalidType = (ExpressionOperatorType)999;
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => sut.GetSymbol(invalidType));
+        Action act = () => sut.GetSymbol(invalidType);
+
+        act.Should().Throw<ArgumentOutOfRangeException>();
     }
 }
