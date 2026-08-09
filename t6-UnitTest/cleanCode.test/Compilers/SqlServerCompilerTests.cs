@@ -55,7 +55,7 @@ public class SqlServerCompilerTests
     }
 
     [Fact]
-    public void Compile_ShouldGenerateCorrectSqlInput_WhenQueryIsValid()
+    public void Compile_ShouldGenerateCorrectDataBaseInput_WhenQueryIsValid()
     {
         // Arrange
         var query = new Query()

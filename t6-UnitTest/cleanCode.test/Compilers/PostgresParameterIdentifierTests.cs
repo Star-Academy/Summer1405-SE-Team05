@@ -20,7 +20,7 @@ public class PostgresParameterIdentifierTests
     [InlineData(-1)]
     public void FormatParameterName_ShouldAlwaysReturnEmptyString_WhenIndexIsProvided(int index)
     {
-        // Act
+        // Arrange && Act
         var result = _sut.FormatParameterName(index);
 
         // Assert

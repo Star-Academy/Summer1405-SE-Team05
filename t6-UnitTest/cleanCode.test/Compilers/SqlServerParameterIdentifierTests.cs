@@ -20,7 +20,7 @@ public class SqlServerParameterIdentifierTests
     [InlineData(-1, "@p-1")]
     public void FormatParameterName_ShouldReturnFormattedName_WhenIndexIsProvided(int index, string expected)
     {
-        // Act
+        // Arrange && Act
         var result = _sut.FormatParameterName(index);
 
         // Assert
