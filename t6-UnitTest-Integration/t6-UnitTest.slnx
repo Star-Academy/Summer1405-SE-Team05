@@ -1,0 +1,6 @@
+<Solution>
+    <Folder Name="/cleanCode/">
+        <Project Path="cleanCode/CleanCode.csproj" />
+    </Folder>
+    <Project Path="cleanCode.test/cleanCode.test.csproj" />
+</Solution>
