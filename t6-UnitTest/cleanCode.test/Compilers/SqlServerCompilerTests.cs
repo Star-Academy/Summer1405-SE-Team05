@@ -9,122 +9,108 @@ namespace cleanCode.test.Compilers;
 
 public class SqlServerCompilerTests
 {
+    private readonly IParameterIdentifier _paramIdentifierMock;
+    private readonly ISqlCommonCompiler _commonCompilerMock;
+    private readonly SqlServerCompiler _sut;
+
+    public SqlServerCompilerTests()
+    {
+        _paramIdentifierMock = Substitute.For<IParameterIdentifier>();
+        _commonCompilerMock = Substitute.For<ISqlCommonCompiler>();
+
+        _sut = new SqlServerCompiler(_paramIdentifierMock, _commonCompilerMock);
+    }
+
     [Fact]
     public void Compile_ShouldGenerateCorrectSqlInput_WhenQueryIsValid()
     {
         // Arrange
-        var expressionOperator = new SqlExpressionOperator();
-        var sqlServerParameterIdentifier = new SqlServerParameterIdentifier();
-        var fromBuilder = new SqlFromBuilder(sqlServerParameterIdentifier);
-        var whereBuilder = new SqlWhereBuilder(sqlServerParameterIdentifier, expressionOperator);
-        var selectBuilder = new SqlSelectBuilder(sqlServerParameterIdentifier);
-        var commonCompiler = new SqlCompilerCommon(fromBuilder, selectBuilder, whereBuilder);
-
-        var sut = new SqlServerCompiler(
-            sqlServerParameterIdentifier,
-            commonCompiler
-        );
-
         var query = new Query()
             .From("Student")
             .Select("StudentNumber", "FirstName")
             .Where("Grade", ExpressionOperatorType.GreaterThanOrEqual, 16.0);
 
+        var expectedResult = new DataBaseInput(
+            "SELECT [StudentNumber], [FirstName] FROM [Student] WHERE [Grade] >= @p0",
+            new List<object> { 16.0 }
+        );
+
+        _commonCompilerMock.Compile(query).Returns(expectedResult);
+
         // Act
-        var result = sut.Compile(query);
+        var result = _sut.Compile(query);
 
         // Assert
         result.QueryString.Should().Be("SELECT [StudentNumber], [FirstName] FROM [Student] WHERE [Grade] >= @p0");
         result.Bindings.Should().ContainSingle().Which.Should().Be(16.0);
+        _commonCompilerMock.Received(1).Compile(query);
     }
 
     [Fact]
     public void Compile_ShouldDelegateCompilation_WhenCalledOnCommonCompiler()
     {
         // Arrange
-        var substituteParamIdentifier = Substitute.For<IParameterIdentifier>();
-        var substituteCommonCompiler = Substitute.For<ISqlCommonCompiler>();
-
         var expectedResult = new DataBaseInput("SELECT * FROM [Student]", new List<object>());
         var query = new Query().From("Student");
 
-        substituteCommonCompiler
-            .Compile(query)
-            .Returns(expectedResult);
-
-        var sut = new SqlServerCompiler(
-            substituteParamIdentifier,
-            substituteCommonCompiler
-        );
+        _commonCompilerMock.Compile(query).Returns(expectedResult);
 
         // Act
-        var result = sut.Compile(query);
+        var result = _sut.Compile(query);
 
         // Assert
         result.QueryString.Should().Be(expectedResult.QueryString);
-
-        substituteCommonCompiler
-            .Received(1)
-            .Compile(query);
+        _commonCompilerMock.Received(1).Compile(query);
     }
 
     [Fact]
     public void Constructor_ShouldThrowArgumentNullException_WhenParamIdentifierIsNull()
     {
-        // Arrange
-        var mockCommonCompiler = Substitute.For<ISqlCommonCompiler>();
-
         // Act
-        Action act = () => new SqlServerCompiler(null!, mockCommonCompiler);
+        Action act = () => new SqlServerCompiler(null!, _commonCompilerMock);
 
         // Assert
-        act.Should().Throw<ArgumentNullException>();
+        act.Should().Throw<ArgumentNullException>()
+           .WithParameterName("paramIdentifier");
     }
 
     [Fact]
     public void Constructor_ShouldThrowArgumentNullException_WhenCommonCompilerIsNull()
     {
-        // Arrange
-        var mockParamIdentifier = Substitute.For<IParameterIdentifier>();
-
         // Act
-        Action act = () => new SqlServerCompiler(mockParamIdentifier, null!);
+        Action act = () => new SqlServerCompiler(_paramIdentifierMock, null!);
 
         // Assert
-        act.Should().Throw<ArgumentNullException>();
+        act.Should().Throw<ArgumentNullException>()
+           .WithParameterName("commonCompiler");
     }
 
     [Fact]
     public void Compile_ShouldThrowArgumentNullException_WhenQueryIsNull()
     {
-        // Arrange
-        var mockParamIdentifier = Substitute.For<IParameterIdentifier>();
-        var mockCommonCompiler = Substitute.For<ISqlCommonCompiler>();
-        var sut = new SqlServerCompiler(mockParamIdentifier, mockCommonCompiler);
-
         // Act
-        Action act = () => sut.Compile(null!);
+        Action act = () => _sut.Compile(null!);
 
         // Assert
-        act.Should().Throw<ArgumentNullException>();
+        act.Should().Throw<ArgumentNullException>()
+           .WithParameterName("query");
     }
 
     [Fact]
     public void FormatParameterName_ShouldCallParamIdentifier_WhenIndexIsProvided()
     {
         // Arrange
-        var mockParamIdentifier = Substitute.For<IParameterIdentifier>();
-        mockParamIdentifier.FormatParameterName(1).Returns("@p1");
-        var mockCommonCompiler = Substitute.For<ISqlCommonCompiler>();
+        const int index = 1;
+        const string expectedFormat = "@p1";
 
-        var sut = new SqlServerCompiler(mockParamIdentifier, mockCommonCompiler);
+        _paramIdentifierMock.FormatParameterName(index).Returns(expectedFormat);
 
         // Act
-        var result = sut.FormatParameterName(1);
+        var result = _sut.FormatParameterName(index);
 
         // Assert
-        result.Should().Be("@p1");
-        mockParamIdentifier.Received(1).FormatParameterName(1);
+        result.Should().Be(expectedFormat);
+        _paramIdentifierMock.Received(1).FormatParameterName(index);
     }
 
     [Theory]
@@ -135,22 +121,15 @@ public class SqlServerCompilerTests
         object[] expectedBindings)
     {
         // Arrange
-        var expressionOperator = new SqlExpressionOperator();
-        var sqlServerParameterIdentifier = new SqlServerParameterIdentifier();
-        var fromBuilder = new SqlFromBuilder(sqlServerParameterIdentifier);
-        var whereBuilder = new SqlWhereBuilder(sqlServerParameterIdentifier, expressionOperator);
-        var selectBuilder = new SqlSelectBuilder(sqlServerParameterIdentifier);
-        var commonCompiler = new SqlCompilerCommon(fromBuilder, selectBuilder, whereBuilder);
-
-        var sut = new SqlServerCompiler(
-            sqlServerParameterIdentifier,
-            commonCompiler);
+        var expectedResult = new DataBaseInput(expectedSql, new List<object>(expectedBindings));
+        _commonCompilerMock.Compile(query).Returns(expectedResult);
 
         // Act
-        var result = sut.Compile(query);
+        var result = _sut.Compile(query);
 
         // Assert
         result.QueryString.Should().Be(expectedSql);
         result.Bindings.Should().Equal(expectedBindings);
+        _commonCompilerMock.Received(1).Compile(query);
     }
 }
