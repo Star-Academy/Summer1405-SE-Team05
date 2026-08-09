@@ -4,7 +4,6 @@ using Xunit;
 
 namespace cleanCode.test.Compilers;
 
-
 public class SqlServerParameterIdentifierTests
 {
     private readonly SqlServerParameterIdentifier _sut;
@@ -14,13 +13,17 @@ public class SqlServerParameterIdentifierTests
         _sut = new SqlServerParameterIdentifier();
     }
 
-    [Fact]
-    public void FormatParameterName_ShouldReturnFormattedName_WhenIndexIsZero()
+    [Theory]
+    [InlineData(0, "@p0")]
+    [InlineData(1, "@p1")]
+    [InlineData(10, "@p10")]
+    [InlineData(-1, "@p-1")]
+    public void FormatParameterName_ShouldReturnFormattedName_WhenIndexIsProvided(int index, string expected)
     {
         // Act
-        var result = _sut.FormatParameterName(0);
+        var result = _sut.FormatParameterName(index);
 
         // Assert
-        result.Should().Be("@p0");
+        result.Should().Be(expected);
     }
 }

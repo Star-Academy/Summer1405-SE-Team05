@@ -13,14 +13,17 @@ public class PostgresParameterIdentifierTests
         _sut = new PostgresParameterIdentifier();
     }
 
-    [Fact]
-    public void FormatParameterName_ShouldReturnEmptyString_WhenIndexIsZero()
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(5)]
+    [InlineData(-1)]
+    public void FormatParameterName_ShouldAlwaysReturnEmptyString_WhenIndexIsProvided(int index)
     {
         // Act
-        var result = _sut.FormatParameterName(0);
+        var result = _sut.FormatParameterName(index);
 
         // Assert
         result.Should().BeEmpty();
     }
 }
-

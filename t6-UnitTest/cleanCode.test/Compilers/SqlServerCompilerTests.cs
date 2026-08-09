@@ -22,6 +22,39 @@ public class SqlServerCompilerTests
     }
 
     [Fact]
+    public void Constructor_ShouldThrowArgumentNullException_WhenParamIdentifierIsNull()
+    {
+        // Act
+        Action act = () => new SqlServerCompiler(null!, _commonCompilerMock);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+           .WithParameterName("paramIdentifier");
+    }
+
+    [Fact]
+    public void Constructor_ShouldThrowArgumentNullException_WhenCommonCompilerIsNull()
+    {
+        // Act
+        Action act = () => new SqlServerCompiler(_paramIdentifierMock, null!);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+           .WithParameterName("commonCompiler");
+    }
+
+    [Fact]
+    public void Compile_ShouldThrowArgumentNullException_WhenQueryIsNull()
+    {
+        // Act
+        Action act = () => _sut.Compile(null!);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+           .WithParameterName("query");
+    }
+
+    [Fact]
     public void Compile_ShouldGenerateCorrectSqlInput_WhenQueryIsValid()
     {
         // Arrange
@@ -63,37 +96,24 @@ public class SqlServerCompilerTests
         _commonCompilerMock.Received(1).Compile(query);
     }
 
-    [Fact]
-    public void Constructor_ShouldThrowArgumentNullException_WhenParamIdentifierIsNull()
+    [Theory]
+    [ClassData(typeof(SqlServerTestData))]
+    public void Compile_ShouldReturnExpectedSqlQuery_WhenQueryMatchesClassData(
+        Query query,
+        string expectedSqlQuery,
+        object[] expectedBindings)
     {
+        // Arrange
+        var expectedResult = new DataBaseInput(expectedSqlQuery, new List<object>(expectedBindings));
+        _commonCompilerMock.Compile(query).Returns(expectedResult);
+
         // Act
-        Action act = () => new SqlServerCompiler(null!, _commonCompilerMock);
+        var result = _sut.Compile(query);
 
         // Assert
-        act.Should().Throw<ArgumentNullException>()
-           .WithParameterName("paramIdentifier");
-    }
-
-    [Fact]
-    public void Constructor_ShouldThrowArgumentNullException_WhenCommonCompilerIsNull()
-    {
-        // Act
-        Action act = () => new SqlServerCompiler(_paramIdentifierMock, null!);
-
-        // Assert
-        act.Should().Throw<ArgumentNullException>()
-           .WithParameterName("commonCompiler");
-    }
-
-    [Fact]
-    public void Compile_ShouldThrowArgumentNullException_WhenQueryIsNull()
-    {
-        // Act
-        Action act = () => _sut.Compile(null!);
-
-        // Assert
-        act.Should().Throw<ArgumentNullException>()
-           .WithParameterName("query");
+        result.QueryString.Should().Be(expectedSqlQuery);
+        result.Bindings.Should().Equal(expectedBindings);
+        _commonCompilerMock.Received(1).Compile(query);
     }
 
     [Fact]
@@ -111,25 +131,5 @@ public class SqlServerCompilerTests
         // Assert
         result.Should().Be(expectedFormat);
         _paramIdentifierMock.Received(1).FormatParameterName(index);
-    }
-
-    [Theory]
-    [ClassData(typeof(SqlServerTestData))]
-    public void Compile_ShouldGenerateExpectedSql_WhenUsingClassData(
-        Query query,
-        string expectedSql,
-        object[] expectedBindings)
-    {
-        // Arrange
-        var expectedResult = new DataBaseInput(expectedSql, new List<object>(expectedBindings));
-        _commonCompilerMock.Compile(query).Returns(expectedResult);
-
-        // Act
-        var result = _sut.Compile(query);
-
-        // Assert
-        result.QueryString.Should().Be(expectedSql);
-        result.Bindings.Should().Equal(expectedBindings);
-        _commonCompilerMock.Received(1).Compile(query);
     }
 }

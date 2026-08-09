@@ -22,7 +22,40 @@ public class PostgresCompilerTests
     }
 
     [Fact]
-    public void Compile_ShouldGenerateCorrectSqlInput_WhenQueryIsValid()
+    public void Constructor_ShouldThrowArgumentNullException_WhenParamIdentifierIsNull()
+    {
+        // Act
+        Action act = () => new PostgresCompiler(null!, _mockCommonCompiler);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+           .WithParameterName("paramIdentifier");
+    }
+
+    [Fact]
+    public void Constructor_ShouldThrowArgumentNullException_WhenCommonCompilerIsNull()
+    {
+        // Act
+        Action act = () => new PostgresCompiler(_mockParamIdentifier, null!);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+           .WithParameterName("commonCompiler");
+    }
+
+    [Fact]
+    public void Compile_ShouldThrowArgumentNullException_WhenQueryIsNull()
+    {
+        // Act
+        Action act = () => _sut.Compile(null!);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+           .WithParameterName("query");
+    }
+
+    [Fact]
+    public void Compile_ShouldReturnDataBaseInput_WhenQueryIsValid()
     {
         // Arrange
         var query = new Query()
@@ -84,10 +117,8 @@ public class PostgresCompilerTests
             new List<object> { 16 }
         );
 
-        // Here we mock the behavior of common compiler using mocked operator/builders
         _mockCommonCompiler.Compile(query).Returns(info =>
         {
-            // Verifying operator call
             mockOperator.GetSymbol(ExpressionOperatorType.GreaterThanOrEqual);
             return expectedResult;
         });
@@ -101,37 +132,24 @@ public class PostgresCompilerTests
         mockOperator.Received(1).GetSymbol(ExpressionOperatorType.GreaterThanOrEqual);
     }
 
-    [Fact]
-    public void Constructor_ShouldThrowArgumentNullException_WhenParamIdentifierIsNull()
+    [Theory]
+    [ClassData(typeof(PostgresTestData))]
+    public void Compile_ShouldReturnExpectedSqlQuery_WhenQueryMatchesClassData(
+        Query query,
+        string expectedSqlQuery,
+        object[] expectedBindings)
     {
+        // Arrange
+        var expectedResult = new DataBaseInput(expectedSqlQuery, new List<object>(expectedBindings));
+        _mockCommonCompiler.Compile(query).Returns(expectedResult);
+
         // Act
-        Action act = () => new PostgresCompiler(null!, _mockCommonCompiler);
+        var result = _sut.Compile(query);
 
         // Assert
-        act.Should().Throw<ArgumentNullException>()
-           .WithParameterName("paramIdentifier");
-    }
-
-    [Fact]
-    public void Constructor_ShouldThrowArgumentNullException_WhenCommonCompilerIsNull()
-    {
-        // Act
-        Action act = () => new PostgresCompiler(_mockParamIdentifier, null!);
-
-        // Assert
-        act.Should().Throw<ArgumentNullException>()
-           .WithParameterName("commonCompiler");
-    }
-
-    [Fact]
-    public void Compile_ShouldThrowArgumentNullException_WhenQueryIsNull()
-    {
-        // Act
-        Action act = () => _sut.Compile(null!);
-
-        // Assert
-        act.Should().Throw<ArgumentNullException>()
-           .WithParameterName("query");
+        result.QueryString.Should().Be(expectedSqlQuery);
+        result.Bindings.Should().Equal(expectedBindings);
+        _mockCommonCompiler.Received(1).Compile(query);
     }
 
     [Fact]
@@ -149,25 +167,5 @@ public class PostgresCompilerTests
         // Assert
         result.Should().Be(expectedFormat);
         _mockParamIdentifier.Received(1).FormatParameterName(index);
-    }
-
-    [Theory]
-    [ClassData(typeof(PostgresTestData))]
-    public void Compile_ShouldGenerateExpectedSql_WhenUsingClassData(
-        Query query,
-        string expectedSql,
-        object[] expectedBindings)
-    {
-        // Arrange
-        var expectedResult = new DataBaseInput(expectedSql, new List<object>(expectedBindings));
-        _mockCommonCompiler.Compile(query).Returns(expectedResult);
-
-        // Act
-        var result = _sut.Compile(query);
-
-        // Assert
-        result.QueryString.Should().Be(expectedSql);
-        result.Bindings.Should().Equal(expectedBindings);
-        _mockCommonCompiler.Received(1).Compile(query);
     }
 }
