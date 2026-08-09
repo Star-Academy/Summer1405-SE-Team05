@@ -3,10 +3,11 @@ using FluentAssertions;
 using Xunit;
 
 namespace cleanCode.test.Compilers;
+
 public class ParameterIdentifierTests
 {
     [Fact]
-    public void PostgresParameterIdentifier_FormatParameterName_Should_Return_Empty_String()
+    public void FormatParameterName_ShouldReturnEmptyString_WhenCalledOnPostgresParameterIdentifier()
     {
         // Arrange
         var sut = new PostgresParameterIdentifier();
@@ -19,7 +20,7 @@ public class ParameterIdentifierTests
     }
 
     [Fact]
-    public void SqlServerParameterIdentifier_FormatParameterName_Should_Return_Formatted_Name()
+    public void FormatParameterName_ShouldReturnFormattedName_WhenCalledOnSqlServerParameterIdentifier()
     {
         // Arrange
         var sut = new SqlServerParameterIdentifier();

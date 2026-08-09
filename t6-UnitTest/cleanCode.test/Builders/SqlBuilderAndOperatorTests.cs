@@ -5,10 +5,11 @@ using NSubstitute;
 using Xunit;
 
 namespace cleanCode.test.Builders;
+
 public class SqlBuilderAndOperatorTests
 {
     [Fact]
-    public void SqlFromBuilder_Constructor_NullParamIdentifier_ThrowsArgumentNullException()
+    public void Constructor_ShouldThrowArgumentNullException_WhenParamIdentifierIsNull()
     {
         // Arrange
         // Act
@@ -22,7 +23,7 @@ public class SqlBuilderAndOperatorTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void SqlFromBuilder_Build_NullOrWhiteSpaceTable_ThrowsArgumentException(string? tableName)
+    public void Build_ShouldThrowArgumentException_WhenTableNameIsNullOrEmptyOrWhiteSpace(string? tableName)
     {
         // Arrange
         var mockParamIdentifier = Substitute.For<IParameterIdentifier>();
@@ -36,7 +37,7 @@ public class SqlBuilderAndOperatorTests
     }
 
     [Fact]
-    public void SqlExpressionOperator_GetSymbol_InvalidOperatorType_ThrowsArgumentOutOfRangeException()
+    public void GetSymbol_ShouldThrowArgumentOutOfRangeException_WhenOperatorTypeIsInvalid()
     {
         // Arrange
         var sut = new SqlExpressionOperator();

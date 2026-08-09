@@ -6,10 +6,11 @@ using NSubstitute;
 using Xunit;
 
 namespace cleanCode.test.Compilers;
+
 public class PostgresCompilerTests
 {
     [Fact]
-    public void PostgresCompiler_Should_Generate_Correct_SqlInput()
+    public void Compile_ShouldGenerateCorrectSqlInput_WhenQueryIsValid()
     {
         // Arrange
         var expressionOperator = new SqlExpressionOperator();
@@ -38,7 +39,7 @@ public class PostgresCompilerTests
     }
 
     [Fact]
-    public void PostgresCompiler_Should_Delegate_Compilation_To_CommonCompiler()
+    public void Compile_ShouldDelegateCompilation_WhenCalledOnCommonCompiler()
     {
         // Arrange
         var substituteParamIdentifier = Substitute.For<IParameterIdentifier>();
@@ -68,7 +69,7 @@ public class PostgresCompilerTests
     }
 
     [Fact]
-    public void PostgresCompiler_Mocked_ExpressionOperator()
+    public void Compile_ShouldUseMockedExpressionOperator_WhenWhereClauseIsCompiled()
     {
         // Arrange
         var pgIdentifier = new PostgresParameterIdentifier();
@@ -99,7 +100,7 @@ public class PostgresCompilerTests
     }
 
     [Fact]
-    public void PostgresCompiler_Constructor_NullParamIdentifier_ThrowsArgumentNullException()
+    public void Constructor_ShouldThrowArgumentNullException_WhenParamIdentifierIsNull()
     {
         // Arrange
         var mockCommonCompiler = Substitute.For<ISqlCommonCompiler>();
@@ -112,7 +113,7 @@ public class PostgresCompilerTests
     }
 
     [Fact]
-    public void PostgresCompiler_Constructor_NullCommonCompiler_ThrowsArgumentNullException()
+    public void Constructor_ShouldThrowArgumentNullException_WhenCommonCompilerIsNull()
     {
         // Arrange
         var mockParamIdentifier = Substitute.For<IParameterIdentifier>();
@@ -125,7 +126,7 @@ public class PostgresCompilerTests
     }
 
     [Fact]
-    public void PostgresCompiler_Compile_NullQuery_ThrowsArgumentNullException()
+    public void Compile_ShouldThrowArgumentNullException_WhenQueryIsNull()
     {
         // Arrange
         var mockParamIdentifier = Substitute.For<IParameterIdentifier>();
@@ -140,7 +141,7 @@ public class PostgresCompilerTests
     }
 
     [Fact]
-    public void PostgresCompiler_FormatParameterName_Calls_ParamIdentifier()
+    public void FormatParameterName_ShouldCallParamIdentifier_WhenIndexIsProvided()
     {
         // Arrange
         var mockParamIdentifier = Substitute.For<IParameterIdentifier>();
@@ -159,7 +160,7 @@ public class PostgresCompilerTests
 
     [Theory]
     [ClassData(typeof(PostgresTestData))]
-    public void PostgresCompiler_Should_Generate_Expected_Sql_Using_ClassData(
+    public void Compile_ShouldGenerateExpectedSql_WhenUsingClassData(
         Query query,
         string expectedSql,
         object[] expectedBindings)
