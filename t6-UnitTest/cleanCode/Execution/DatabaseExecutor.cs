@@ -1,8 +1,10 @@
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CleanCode;
 
+[ExcludeFromCodeCoverage]
 public sealed class DatabaseExecutor : IExecuter
 {
     private readonly ICompiler _compiler;

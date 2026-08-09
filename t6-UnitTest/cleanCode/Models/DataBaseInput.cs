@@ -2,9 +2,9 @@ namespace CleanCode;
 
 public sealed class DataBaseInput
 {
-    public DataBaseInput(string sql, List<object> bindings)
+    public DataBaseInput(string queryString, List<object> bindings)
     {
-        QueryString = sql;
+        QueryString = queryString;
         Bindings = bindings.AsReadOnly();
     }
 
