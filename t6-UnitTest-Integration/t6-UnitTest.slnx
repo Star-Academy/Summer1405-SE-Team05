@@ -3,4 +3,5 @@
         <Project Path="cleanCode/CleanCode.csproj" />
     </Folder>
     <Project Path="cleanCode.test/cleanCode.test.csproj" />
+    <Project Path="cleanCode.integration/cleanCode.integration.csproj" />
 </Solution>
