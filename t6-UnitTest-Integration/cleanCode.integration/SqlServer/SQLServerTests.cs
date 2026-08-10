@@ -5,14 +5,17 @@ using System.Linq;
 using System.Threading.Tasks;
 using CleanCode;
 using FluentAssertions;
+using Microsoft.Data.SqlClient;
 using Xunit;
 
 namespace cleanCode.integration.sqlserver;
 
-public class SQLServerTests : IClassFixture<MsSqlDatabaseFixture>
+public class SQLServerTests : IClassFixture<MsSqlDatabaseFixture>, IAsyncLifetime
 {
     private readonly MsSqlDatabaseFixture _fixture;
     private readonly SqlServerCompiler _sqlServerCompiler;
+    private SqlConnection _connection = null!;
+    private DatabaseExecutor _sut = null!;
 
     public SQLServerTests(MsSqlDatabaseFixture fixture)
     {
@@ -28,19 +31,30 @@ public class SQLServerTests : IClassFixture<MsSqlDatabaseFixture>
         _sqlServerCompiler = new SqlServerCompiler(parameterIdentifier, commonCompiler);
     }
 
+    public async Task InitializeAsync()
+    {
+        _connection = await _fixture.CreateConnectionAsync();
+        _sut = new DatabaseExecutor(_connection, _sqlServerCompiler);
+    }
+
+    public async Task DisposeAsync()
+    {
+        if (_connection != null)
+        {
+            await _connection.DisposeAsync();
+        }
+    }
+
     [Fact]
-    public async Task Execute_ShouldThrowArgumentException_WhenTableNameIsNull()
+    public void Execute_ShouldThrowArgumentException_WhenTableNameIsNull()
     {
         // Arrange
-        await using var connection = await _fixture.CreateConnectionAsync();
-        var sut = new DatabaseExecutor(connection, _sqlServerCompiler);
-
         var query = new Query()
             .Select("studentnumber")
             .Where("grade", ExpressionOperatorType.Equals, 19.00m);
 
         // Act
-        Action executeAction = () => sut.Execute(query, reader => reader.GetString(0));
+        Action executeAction = () => _sut.Execute(query, reader => reader.GetString(0));
 
         // Assert
         executeAction.Should().Throw<ArgumentException>()
@@ -51,21 +65,18 @@ public class SQLServerTests : IClassFixture<MsSqlDatabaseFixture>
     [InlineData(17.00, new[] { "97100166" })]
     [InlineData(19.00, new[] { "97100112", "98100201" })]
     [InlineData(20.00, new string[0])]
-    public async Task Execute_ShouldReturnExpectedStudentNumbers_WhenEqualityConditionWithoutOperatorIsApplied(
+    public void Execute_ShouldReturnExpectedStudentNumbers_WhenEqualityConditionWithoutOperatorIsApplied(
         decimal thresholdGrade,
         string[] expectedStudentNumbers)
     {
         // Arrange
-        await using var connection = await _fixture.CreateConnectionAsync();
-        var sut = new DatabaseExecutor(connection, _sqlServerCompiler);
-
         var query = new Query()
             .From("student")
             .Select("studentnumber")
             .Where("grade", thresholdGrade);
 
         // Act
-        var actualStudentNumbers = sut.Execute(query, reader => reader.GetString(0));
+        var actualStudentNumbers = _sut.Execute(query, reader => reader.GetString(0));
 
         // Assert
         actualStudentNumbers.Should().BeEquivalentTo(expectedStudentNumbers);
@@ -77,22 +88,19 @@ public class SQLServerTests : IClassFixture<MsSqlDatabaseFixture>
     [InlineData(ExpressionOperatorType.LessThanOrEqual, 16.00, new[] { "99100305", "97100999" })]
     [InlineData(ExpressionOperatorType.GreaterThanOrEqual, 17.00, new[] { "98100201", "97100112", "97100166" })]
     [InlineData(ExpressionOperatorType.NotEquals, 19.00, new[] { "97100166", "99100305", "97100999" })]
-    public async Task Execute_ShouldReturnExpectedStudentNumbers_WhenComparisonOperatorsAreApplied(
+    public void Execute_ShouldReturnExpectedStudentNumbers_WhenComparisonOperatorsAreApplied(
         ExpressionOperatorType expressionOperator,
         decimal thresholdGrade,
         string[] expectedStudentNumbers)
     {
         // Arrange
-        await using var connection = await _fixture.CreateConnectionAsync();
-        var sut = new DatabaseExecutor(connection, _sqlServerCompiler);
-
         var query = new Query()
             .From("student")
             .Select("studentnumber")
             .Where("grade", expressionOperator, thresholdGrade);
 
         // Act
-        var actualStudentNumbers = sut.Execute(query, reader => reader.GetString(0));
+        var actualStudentNumbers = _sut.Execute(query, reader => reader.GetString(0));
 
         // Assert
         actualStudentNumbers.Should().BeEquivalentTo(expectedStudentNumbers);
@@ -100,16 +108,12 @@ public class SQLServerTests : IClassFixture<MsSqlDatabaseFixture>
 
     [Theory]
     [MemberData(nameof(MultipleTestData))]
-    public async Task Execute_ShouldReturnExpectedStudentNumbers_WhenMultipleWhereOrConditionsAreCombined(
+    public void Execute_ShouldReturnExpectedStudentNumbers_WhenMultipleWhereOrConditionsAreCombined(
         Query query,
         string[] expectedStudentNumbers)
     {
-        // Arrange
-        await using var connection = await _fixture.CreateConnectionAsync();
-        var sut = new DatabaseExecutor(connection, _sqlServerCompiler);
-
-        // Act
-        var actualStudentNumbers = sut.Execute(query, reader => reader.GetString(0));
+        // Arrange & Act
+        var actualStudentNumbers = _sut.Execute(query, reader => reader.GetString(0));
 
         // Assert
         actualStudentNumbers.Should().BeEquivalentTo(expectedStudentNumbers);
@@ -188,17 +192,13 @@ public class SQLServerTests : IClassFixture<MsSqlDatabaseFixture>
 
     [Theory]
     [MemberData(nameof(SelectProjectionsTestData))]
-    public async Task Execute_ShouldReturnExpectedProjections_WhenSelectingColumnsDynamically(
+    public void Execute_ShouldReturnExpectedProjections_WhenSelectingColumnsDynamically(
         Query query,
         Func<DbDataReader, object> resultMapper,
         int expectedResultCount)
     {
-        // Arrange
-        await using var connection = await _fixture.CreateConnectionAsync();
-        var sut = new DatabaseExecutor(connection, _sqlServerCompiler);
-
-        // Act
-        var actualResults = sut.Execute(query, resultMapper);
+        // Arrange & Act
+        var actualResults = _sut.Execute(query, resultMapper);
 
         // Assert
         actualResults.Should().NotBeNull();
@@ -207,18 +207,15 @@ public class SQLServerTests : IClassFixture<MsSqlDatabaseFixture>
     }
 
     [Fact]
-    public async Task Execute_ShouldMapAllFieldsCorrectly_WhenSelectingAllColumns()
+    public void Execute_ShouldMapAllFieldsCorrectly_WhenSelectingAllColumns()
     {
         // Arrange
-        await using var connection = await _fixture.CreateConnectionAsync();
-        var sut = new DatabaseExecutor(connection, _sqlServerCompiler);
-
         var query = new Query()
             .From("student")
             .Where("studentnumber", ExpressionOperatorType.Equals, "98100201");
 
         // Act
-        var results = sut.Execute(query, reader => new StudentDataTransferObject(
+        var results = _sut.Execute(query, reader => new StudentDataTransferObject(
             reader.GetString(0),
             reader.GetString(1),
             reader.GetString(2),

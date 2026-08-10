@@ -25,7 +25,7 @@ public class SqlServerCompilerTests
     public void Constructor_ShouldThrowArgumentNullException_WhenParamIdentifierIsNull()
     {
         // Act
-        Action act = () => new SqlServerCompiler(null!, _commonCompilerMock);
+        var act = () => new SqlServerCompiler(null!, _commonCompilerMock);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
@@ -36,7 +36,7 @@ public class SqlServerCompilerTests
     public void Constructor_ShouldThrowArgumentNullException_WhenCommonCompilerIsNull()
     {
         // Act
-        Action act = () => new SqlServerCompiler(_paramIdentifierMock, null!);
+        var act = () => new SqlServerCompiler(_paramIdentifierMock, null!);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
@@ -47,7 +47,7 @@ public class SqlServerCompilerTests
     public void Compile_ShouldThrowArgumentNullException_WhenQueryIsNull()
     {
         // Act
-        Action act = () => _sut.Compile(null!);
+        var act = () => _sut.Compile(null!);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()

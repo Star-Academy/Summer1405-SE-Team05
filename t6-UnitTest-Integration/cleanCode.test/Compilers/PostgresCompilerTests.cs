@@ -25,7 +25,7 @@ public class PostgresCompilerTests
     public void Constructor_ShouldThrowArgumentNullException_WhenParamIdentifierIsNull()
     {
         // Act
-        Action act = () => new PostgresCompiler(null!, _mockCommonCompiler);
+        var act = () => new PostgresCompiler(null!, _mockCommonCompiler);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
@@ -36,7 +36,7 @@ public class PostgresCompilerTests
     public void Constructor_ShouldThrowArgumentNullException_WhenCommonCompilerIsNull()
     {
         // Act
-        Action act = () => new PostgresCompiler(_mockParamIdentifier, null!);
+        var act = () => new PostgresCompiler(_mockParamIdentifier, null!);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
@@ -47,11 +47,28 @@ public class PostgresCompilerTests
     public void Compile_ShouldThrowArgumentNullException_WhenQueryIsNull()
     {
         // Act
-        Action act = () => _sut.Compile(null!);
+        var act = () => _sut.Compile(null!);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
            .WithParameterName("query");
+    }
+    
+    [Fact]
+    public void Compile_ShouldThrowArgumentException_WhenFromClauseIsMissing()
+    {
+        // Arrange
+        var queryWithoutFrom = new Query().Select("studentnumber");
+
+        _mockCommonCompiler.Compile(queryWithoutFrom)
+            .Returns(_ => throw new ArgumentException("Table name cannot be null or empty."));
+
+        // Act
+        var act = () => _sut.Compile(queryWithoutFrom);
+
+        // Assert
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("Table name cannot be null or empty.");
     }
 
     [Fact]

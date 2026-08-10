@@ -9,43 +9,50 @@ using Xunit;
 
 namespace cleanCode.integration.postgres;
 
-public class PostGreSqlTests : IClassFixture<PostgresContainerFixture>
+public class PostgreSqlTests : IClassFixture<PostgresContainerFixture>, IAsyncLifetime
 {
     private readonly PostgresContainerFixture _fixture;
-    private readonly SqlExpressionOperator _expressionOperator;
-    private readonly PostgresParameterIdentifier _postgresParameterIdentifier;
-    private readonly SqlFromBuilder _fromBuilder;
-    private readonly SqlWhereBuilder _whereBuilder;
-    private readonly SqlSelectBuilder _selectBuilder;
-    private readonly SqlCompilerCommon _commonCompiler;
     private readonly PostgresCompiler _postgresCompiler;
+    private NpgsqlConnection _connection = null!;
+    private DatabaseExecutor _sut = null!;
 
-    public PostGreSqlTests(PostgresContainerFixture fixture)
+    public PostgreSqlTests(PostgresContainerFixture fixture)
     {
         _fixture = fixture;
 
-        _expressionOperator = new SqlExpressionOperator();
-        _postgresParameterIdentifier = new PostgresParameterIdentifier();
-        _fromBuilder = new SqlFromBuilder(_postgresParameterIdentifier);
-        _whereBuilder = new SqlWhereBuilder(_postgresParameterIdentifier, _expressionOperator);
-        _selectBuilder = new SqlSelectBuilder(_postgresParameterIdentifier);
-        _commonCompiler = new SqlCompilerCommon(_fromBuilder, _selectBuilder, _whereBuilder);
-        _postgresCompiler = new PostgresCompiler(_postgresParameterIdentifier, _commonCompiler);
+        var expressionOperator = new SqlExpressionOperator();
+        var postgresParameterIdentifier = new PostgresParameterIdentifier();
+        var fromBuilder = new SqlFromBuilder(postgresParameterIdentifier);
+        var whereBuilder = new SqlWhereBuilder(postgresParameterIdentifier, expressionOperator);
+        var selectBuilder = new SqlSelectBuilder(postgresParameterIdentifier);
+        var commonCompiler = new SqlCompilerCommon(fromBuilder, selectBuilder, whereBuilder);
+        _postgresCompiler = new PostgresCompiler(postgresParameterIdentifier, commonCompiler);
+    }
+
+    public async Task InitializeAsync()
+    {
+        _connection = await _fixture.CreateConnectionAsync();
+        _sut = new DatabaseExecutor(_connection, _postgresCompiler);
+    }
+
+    public async Task DisposeAsync()
+    {
+        if (_connection != null)
+        {
+            await _connection.DisposeAsync();
+        }
     }
 
     [Fact]
-    public async Task Execute_ShouldThrowArgumentException_WhenTableNameIsNull()
+    public void Execute_ShouldThrowArgumentException_WhenTableNameIsNull()
     {
         // Arrange
-        await using var connection = await _fixture.CreateConnectionAsync();
-        var sut = new DatabaseExecutor(connection, _postgresCompiler);
-
         var query = new Query()
             .Select("studentnumber")
             .Where("age", ExpressionOperatorType.Equals, 20);
 
         // Act
-        Action executeAction = () => sut.Execute(query, reader => reader.GetString(0));
+        Action executeAction = () => _sut.Execute(query, reader => reader.GetString(0));
 
         // Assert
         executeAction.Should().Throw<ArgumentException>()
@@ -58,22 +65,19 @@ public class PostGreSqlTests : IClassFixture<PostgresContainerFixture>
     [InlineData(ExpressionOperatorType.Equals, 20f, new[] { "01100523" })]
     [InlineData(ExpressionOperatorType.GreaterThanOrEqual, 15.5f,
         new[] { "98100201", "97100112", "97100999", "01100523", "04100866", "03100111" })]
-    public async Task Execute_ShouldReturnFilteredStudents_WhenGradeConditionIsApplied(
+    public void Execute_ShouldReturnFilteredStudents_WhenGradeConditionIsApplied(
         ExpressionOperatorType expressionOperator,
         float targetGrade,
         string[] expectedStudentNumbers)
     {
         // Arrange
-        await using var connection = await _fixture.CreateConnectionAsync();
-        var sut = new DatabaseExecutor(connection, _postgresCompiler);
-
         var query = new Query()
             .From("student")
             .Select("studentnumber")
             .Where("grade", expressionOperator, targetGrade);
 
         // Act
-        var result = sut.Execute(query, reader => reader.GetString(0));
+        var result = _sut.Execute(query, reader => reader.GetString(0));
 
         // Assert
         result.Should().BeEquivalentTo(expectedStudentNumbers);
@@ -85,22 +89,19 @@ public class PostGreSqlTests : IClassFixture<PostgresContainerFixture>
         new[] { "02100644", "03100755", "04100866", "02100321", "03100111" })]
     [InlineData(ExpressionOperatorType.GreaterThanOrEqual, 24, new[] { "97100112", "97100999", "96100888" })]
     [InlineData(ExpressionOperatorType.LessThanOrEqual, 16, new[] { "03100755", "04100866", "03100111" })]
-    public async Task Execute_ShouldReturnFilteredStudents_WhenAgeConditionIsApplied(
+    public void Execute_ShouldReturnFilteredStudents_WhenAgeConditionIsApplied(
         ExpressionOperatorType expressionOperator,
         int targetAge,
         string[] expectedStudentNumbers)
     {
         // Arrange
-        await using var connection = await _fixture.CreateConnectionAsync();
-        var sut = new DatabaseExecutor(connection, _postgresCompiler);
-
         var query = new Query()
             .From("student")
             .Select("studentnumber")
             .Where("age", expressionOperator, targetAge);
 
         // Act
-        var result = sut.Execute(query, reader => reader.GetString(0));
+        var result = _sut.Execute(query, reader => reader.GetString(0));
 
         // Assert
         result.Should().BeEquivalentTo(expectedStudentNumbers);
@@ -109,22 +110,19 @@ public class PostGreSqlTests : IClassFixture<PostgresContainerFixture>
     [Theory]
     [InlineData(20, 20f, new[] { "99100305", "01100523" })]
     [InlineData(22, 18.75f, new[] { "98100201" })]
-    public async Task Execute_ShouldReturnStudentNumbers_WhenOrWhereConditionsAreAppliedWithoutSelect(
+    public void Execute_ShouldReturnStudentNumbers_WhenOrWhereConditionsAreAppliedWithoutSelect(
         int targetAge,
         float targetGrade,
         string[] expectedStudentNumbers)
     {
         // Arrange
-        await using var connection = await _fixture.CreateConnectionAsync();
-        var sut = new DatabaseExecutor(connection, _postgresCompiler);
-
         var query = new Query()
             .From("student")
             .OrWhere("age", targetAge)
             .OrWhere("grade", targetGrade);
 
         // Act
-        var result = sut.Execute(query, reader => reader.GetString(0));
+        var result = _sut.Execute(query, reader => reader.GetString(0));
 
         // Assert
         result.Should().BeEquivalentTo(expectedStudentNumbers);
