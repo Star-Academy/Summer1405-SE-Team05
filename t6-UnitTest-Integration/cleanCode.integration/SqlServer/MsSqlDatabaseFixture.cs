@@ -7,15 +7,15 @@ namespace cleanCode.integration.sqlserver;
 
 public class MsSqlDatabaseFixture : IAsyncLifetime
 {
-    public MsSqlContainer Container { get; } = new MsSqlBuilder("mcr.hamdocker.ir/mssql/server:2022-latest")
+    private readonly MsSqlContainer _container = new MsSqlBuilder("mcr.hamdocker.ir/mssql/server:2022-latest")
         .WithPassword("Your_strong_Password123")
         .Build();
 
-    public string ConnectionString => Container.GetConnectionString();
+    public string ConnectionString => _container.GetConnectionString();
 
     public async Task InitializeAsync()
     {
-        await Container.StartAsync();
+        await _container.StartAsync();
         await SeedDatabaseAsync();
     }
 
@@ -29,16 +29,16 @@ public class MsSqlDatabaseFixture : IAsyncLifetime
             firstname NVARCHAR(50) NOT NULL,
             lastname NVARCHAR(50) NOT NULL,
             grade DECIMAL(4,2) NOT NULL
-        );
+        );";
 
-        INSERT INTO student (studentnumber, firstname, lastname, grade) VALUES
+        var insertcmd = @"INSERT INTO student (studentnumber, firstname, lastname, grade) VALUES
             ('98100201', N'سارا', N'رضایی', 19.00),
             ('97100112', N'زهرا', N'کریمی', 19.00),
             ('97100166', N'ریحانه', N'امینی', 17.00),
             ('99100305', N'علی', N'احمدی', 13.25),
             ('97100999', N'مهدی', N'باقری', 16.00);";
 
-        await using var command = new SqlCommand(sqlScript, connection);
+        await using var command = new SqlCommand(sqlScript + insertcmd, connection);
         await command.ExecuteNonQueryAsync();
     }
 
@@ -51,6 +51,6 @@ public class MsSqlDatabaseFixture : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        await Container.StopAsync();
+        await _container.StopAsync();
     }
 }

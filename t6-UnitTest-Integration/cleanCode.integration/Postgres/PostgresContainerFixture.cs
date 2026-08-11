@@ -7,16 +7,16 @@ namespace cleanCode.integration.postgres;
 
 public class PostgresContainerFixture : IAsyncLifetime
 {
-    public PostgreSqlContainer Container { get; } = new PostgreSqlBuilder("hub.hamdocker.ir/library/postgres:16")
+    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("hub.hamdocker.ir/library/postgres:16")
         .WithPassword("postgres")
         .Build();
 
     public async Task InitializeAsync()
     {
-        await Container.StartAsync();
+        await _container.StartAsync();
         await SetupDatabaseAsync();
     }
-
+//breack
     private async Task SetupDatabaseAsync()
     {
         await using var connection = await CreateConnectionAsync();
@@ -28,9 +28,10 @@ public class PostgresContainerFixture : IAsyncLifetime
             lastname VARCHAR(50) NOT NULL,
             grade REAL NOT NULL,
             age INT NOT NULL
-        );
+        );";
+            
 
-        INSERT INTO student (studentnumber, firstname, lastname, grade, age) VALUES
+        var insertcmd = @"INSERT INTO student (studentnumber, firstname, lastname, grade, age) VALUES
             ('98100201', 'سارا', 'رضایی', 18.75, 22),
             ('97100112', 'زهرا', 'کریمی', 19.50, 24),
             ('99100305', 'علی', 'احمدی', 13.25, 20),
@@ -47,19 +48,19 @@ public class PostgresContainerFixture : IAsyncLifetime
             ('02100321', 'فاطمه', 'ابراهیمی', 10.00, 17),
             ('03100111', 'دانیال', 'موسوی', 15.50, 16);";
 
-        await using var command = new NpgsqlCommand(sqlScript, connection);
+        await using var command = new NpgsqlCommand(sqlScript + insertcmd, connection);
         await command.ExecuteNonQueryAsync();
     }
 
     public async Task<NpgsqlConnection> CreateConnectionAsync()
     {
-        var connection = new NpgsqlConnection(Container.GetConnectionString());
+        var connection = new NpgsqlConnection(_container.GetConnectionString());
         await connection.OpenAsync();
         return connection;
     }
 
     public async Task DisposeAsync()
     {
-        await Container.DisposeAsync();
+        await _container.DisposeAsync();
     }
 }

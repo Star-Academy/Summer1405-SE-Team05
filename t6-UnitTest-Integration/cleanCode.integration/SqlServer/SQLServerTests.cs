@@ -45,6 +45,14 @@ public class SQLServerTests : IClassFixture<MsSqlDatabaseFixture>, IAsyncLifetim
         }
     }
 
+    public record StudentDataTransferObject(
+        string StudentNumber,
+        string FirstName,
+        string LastName,
+        decimal Grade);
+
+    #region Exception & Validation Tests
+
     [Fact]
     public void Execute_ShouldThrowArgumentException_WhenTableNameIsNull()
     {
@@ -61,11 +69,91 @@ public class SQLServerTests : IClassFixture<MsSqlDatabaseFixture>, IAsyncLifetim
             .WithMessage("Table name cannot be null or empty.");
     }
 
+    #endregion
+
+    #region Select & Projection Tests
+
+    [Fact]
+    public void Execute_ShouldSelectAllColumns_WhenNoSelectClauseIsProvided()
+    {
+        // Arrange
+        var query = new Query().From("student");
+
+        // Act
+        var results = _sut.Execute(query, reader => new StudentDataTransferObject(
+            reader.GetString(0),
+            reader.GetString(1),
+            reader.GetString(2),
+            reader.GetDecimal(3)));
+
+        // Assert
+        results.Should().HaveCount(5);
+        results.All(s => s != null).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Execute_ShouldSelectSingleColumn_WhenOnlyOneColumnIsSpecifiedInSelect()
+    {
+        // Arrange
+        var query = new Query().From("student").Select("studentnumber");
+
+        // Act
+        var results = _sut.Execute(query, reader => reader.GetString(0));
+
+        // Assert
+        results.Should().HaveCount(5);
+        results.All(id => !string.IsNullOrEmpty(id)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Execute_ShouldSelectMultipleColumns_WhenMultipleColumnsAreSpecifiedInSelect()
+    {
+        // Arrange
+        var query = new Query().From("student").Select("studentnumber", "grade");
+
+        // Act
+        var results = _sut.Execute(query, reader => new
+        {
+            StudentNumber = reader.GetString(0),
+            Grade = reader.GetDecimal(1)
+        });
+
+        // Assert
+        results.Should().HaveCount(5);
+        results.All(item => item.StudentNumber != null && item.Grade >= 0).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Execute_ShouldMapAllFieldsCorrectly_WhenSelectingAllColumnsForSingleStudent()
+    {
+        // Arrange
+        var query = new Query()
+            .From("student")
+            .Where("studentnumber", ExpressionOperatorType.Equals, "98100201");
+
+        // Act
+        var results = _sut.Execute(query, reader => new StudentDataTransferObject(
+            reader.GetString(0),
+            reader.GetString(1),
+            reader.GetString(2),
+            reader.GetDecimal(3)));
+
+        // Assert
+        var student = results.Should().ContainSingle().Subject;
+        student.FirstName.Should().Be("سارا");
+        student.LastName.Should().Be("رضایی");
+        student.Grade.Should().Be(19.00m);
+    }
+
+    #endregion
+
+    #region Where Single Condition Tests
+
     [Theory]
     [InlineData(17.00, new[] { "97100166" })]
     [InlineData(19.00, new[] { "97100112", "98100201" })]
     [InlineData(20.00, new string[0])]
-    public void Execute_ShouldReturnExpectedStudentNumbers_WhenEqualityConditionWithoutOperatorIsApplied(
+    public void Execute_ShouldFilterByExactGrade_WhenDefaultEqualityWhereOverloadIsUsed(
         decimal thresholdGrade,
         string[] expectedStudentNumbers)
     {
@@ -88,7 +176,7 @@ public class SQLServerTests : IClassFixture<MsSqlDatabaseFixture>, IAsyncLifetim
     [InlineData(ExpressionOperatorType.LessThanOrEqual, 16.00, new[] { "99100305", "97100999" })]
     [InlineData(ExpressionOperatorType.GreaterThanOrEqual, 17.00, new[] { "98100201", "97100112", "97100166" })]
     [InlineData(ExpressionOperatorType.NotEquals, 19.00, new[] { "97100166", "99100305", "97100999" })]
-    public void Execute_ShouldReturnExpectedStudentNumbers_WhenComparisonOperatorsAreApplied(
+    public void Execute_ShouldFilterByGradeComparisonOperator_WhenExplicitOperatorIsProvided(
         ExpressionOperatorType expressionOperator,
         decimal thresholdGrade,
         string[] expectedStudentNumbers)
@@ -106,125 +194,60 @@ public class SQLServerTests : IClassFixture<MsSqlDatabaseFixture>, IAsyncLifetim
         actualStudentNumbers.Should().BeEquivalentTo(expectedStudentNumbers);
     }
 
-    [Theory]
-    [MemberData(nameof(MultipleTestData))]
-    public void Execute_ShouldReturnExpectedStudentNumbers_WhenMultipleWhereOrConditionsAreCombined(
-        Query query,
-        string[] expectedStudentNumbers)
+    #endregion
+
+    #region Logical Operator (AND / OR) Combination Tests
+
+    [Fact]
+    public void Execute_ShouldFilterByRange_WhenMultipleWhereClausesAreChainedWithAnd()
     {
-        // Arrange & Act
+        // Arrange 
+        var query = new Query()
+            .From("student")
+            .Select("studentnumber")
+            .Where("grade", ExpressionOperatorType.GreaterThanOrEqual, 18.00m)
+            .Where("grade", ExpressionOperatorType.LessThanOrEqual, 19.50m);
+
+        // Act
         var actualStudentNumbers = _sut.Execute(query, reader => reader.GetString(0));
 
         // Assert
-        actualStudentNumbers.Should().BeEquivalentTo(expectedStudentNumbers);
-    }
-
-    public static IEnumerable<object[]> MultipleTestData()
-    {
-        yield return new object[]
-        {
-            new Query()
-                .From("student")
-                .Select("studentnumber")
-                .Where("grade", ExpressionOperatorType.GreaterThanOrEqual, 18.00m)
-                .Where("grade", ExpressionOperatorType.LessThanOrEqual, 19.50m),
-            new[] { "98100201", "97100112" }
-        };
-
-        yield return new object[]
-        {
-            new Query()
-                .From("student")
-                .Select("studentnumber")
-                .OrWhere("grade", ExpressionOperatorType.GreaterThanOrEqual, 19.00m)
-                .OrWhere("studentnumber", "99100305"),
-            new[] { "98100201", "97100112", "99100305" }
-        };
-
-        yield return new object[]
-        {
-            new Query()
-                .From("student")
-                .Select("studentnumber")
-                .OrWhere("studentnumber", ExpressionOperatorType.Equals, "98100201")
-                .OrWhere("studentnumber", ExpressionOperatorType.Equals, "97100999"),
-            new[] { "98100201", "97100999" }
-        };
-    }
-
-    public record StudentDataTransferObject(
-        string StudentNumber,
-        string FirstName,
-        string LastName,
-        decimal Grade);
-
-    public static IEnumerable<object[]> SelectProjectionsTestData()
-    {
-        yield return new object[]
-        {
-            new Query().From("student"),
-            new Func<DbDataReader, object>(reader => new StudentDataTransferObject(
-                reader.GetString(0),
-                reader.GetString(1),
-                reader.GetString(2),
-                reader.GetDecimal(3))),
-            5
-        };
-
-        yield return new object[]
-        {
-            new Query().From("student").Select("studentnumber"),
-            new Func<DbDataReader, object>(reader => reader.GetString(0)),
-            5
-        };
-
-        yield return new object[]
-        {
-            new Query().From("student").Select("studentnumber", "grade"),
-            new Func<DbDataReader, object>(reader => new
-            {
-                StudentNumber = reader.GetString(0),
-                Grade = reader.GetDecimal(1)
-            }),
-            5
-        };
-    }
-
-    [Theory]
-    [MemberData(nameof(SelectProjectionsTestData))]
-    public void Execute_ShouldReturnExpectedProjections_WhenSelectingColumnsDynamically(
-        Query query,
-        Func<DbDataReader, object> resultMapper,
-        int expectedResultCount)
-    {
-        // Arrange & Act
-        var actualResults = _sut.Execute(query, resultMapper);
-
-        // Assert
-        actualResults.Should().NotBeNull();
-        actualResults.Should().HaveCount(expectedResultCount);
-        actualResults.All(item => item != null).Should().BeTrue();
+        actualStudentNumbers.Should().BeEquivalentTo(new[] { "98100201", "97100112" });
     }
 
     [Fact]
-    public void Execute_ShouldMapAllFieldsCorrectly_WhenSelectingAllColumns()
+    public void Execute_ShouldReturnMatchingStudents_WhenOrWhereIsCombinedWithGradeAndStudentNumber()
     {
         // Arrange
         var query = new Query()
             .From("student")
-            .Where("studentnumber", ExpressionOperatorType.Equals, "98100201");
+            .Select("studentnumber")
+            .OrWhere("grade", ExpressionOperatorType.GreaterThanOrEqual, 19.00m)
+            .OrWhere("studentnumber", "99100305");
 
         // Act
-        var results = _sut.Execute(query, reader => new StudentDataTransferObject(
-            reader.GetString(0),
-            reader.GetString(1),
-            reader.GetString(2),
-            reader.GetDecimal(3)));
+        var actualStudentNumbers = _sut.Execute(query, reader => reader.GetString(0));
 
         // Assert
-        var student = results.Should().ContainSingle().Subject;
-        student.FirstName.Should().Be("سارا");
-        student.LastName.Should().Be("رضایی");
-        student.Grade.Should().Be(19.00m);
+        actualStudentNumbers.Should().BeEquivalentTo(new[] { "98100201", "97100112", "99100305" });
     }
+
+    [Fact]
+    public void Execute_ShouldReturnMatchingStudents_WhenMultipleOrWhereClausesAreChainedForStudentNumbers()
+    {
+        // Arrange
+        var query = new Query()
+            .From("student")
+            .Select("studentnumber")
+            .OrWhere("studentnumber", ExpressionOperatorType.Equals, "98100201")
+            .OrWhere("studentnumber", ExpressionOperatorType.Equals, "97100999");
+
+        // Act
+        var actualStudentNumbers = _sut.Execute(query, reader => reader.GetString(0));
+
+        // Assert
+        actualStudentNumbers.Should().BeEquivalentTo(new[] { "98100201", "97100999" });
+    }
+
+    #endregion
 }
