@@ -107,23 +107,49 @@ public class DataBaseControllerTests
         _dbService.Received(1).DeleteStudent(studentNumber);
     }
     
+    
     [Fact]
     public void Update_ShouldReturnResponseFromService_WhenCalled()
     {
         // Arrange
-        var studentToUpdate = new student { studentnumber = "40112345", firstname = "AliUpdated" };
+        var studentNumber = "40112345";
+        var studentToUpdate = new student { studentnumber = studentNumber, firstname = "AliUpdated" };
         var expectedResponse = new ApiResponse<string>(true, "Student updated successfully.", "updated successfully");
 
-        _dbService.UpdateStudent(Arg.Any<student>()).Returns(expectedResponse);
+        _dbService.UpdateStudent(studentNumber, studentToUpdate).Returns(expectedResponse);
 
         // Act
-        var result = _controller.Update(studentToUpdate);
+        var result = _controller.Update(studentNumber, studentToUpdate);
 
         // Assert
         result.Should().NotBeNull();
         result.Success.Should().BeTrue();
         result.Message.Should().Be("Student updated successfully.");
-        _dbService.Received(1).UpdateStudent(Arg.Any<student>());
+        _dbService.Received(1).UpdateStudent(studentNumber, studentToUpdate);
+    }
+    
+    [Fact]
+    public void Update_ShouldReturnErrorResponseFromService_WhenStudentNumberDoesNotMatchBody()
+    {
+        // Arrange
+        var routeStudentNumber = "40112345";
+        var mismatchedStudent = new student 
+        { 
+            studentnumber = "99999999", 
+            firstname = "Ali" 
+        };
+
+        var expectedResponse = new ApiResponse<string>(false, "Changing student number is not allowed.", null);
+        _dbService.UpdateStudent(routeStudentNumber, mismatchedStudent).Returns(expectedResponse);
+
+        // Act
+        var result = _controller.Update(routeStudentNumber, mismatchedStudent);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Success.Should().BeFalse();
+        result.Message.Should().Be("Changing student number is not allowed.");
+        _dbService.Received(1).UpdateStudent(routeStudentNumber, mismatchedStudent);
     }
 
     [Fact]

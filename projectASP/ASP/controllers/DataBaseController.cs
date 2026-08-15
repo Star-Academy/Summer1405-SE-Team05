@@ -1,4 +1,4 @@
-using ASP.models;
+    using ASP.models;
 using ASP.services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -33,10 +33,10 @@ namespace ASP.controllers
             return _service.AddStudent(student);
         }
 
-        [HttpPut("students")]
-        public ApiResponse<string> Update([FromBody] student student)
+        [HttpPut("students/{studentnumber}")]
+        public ApiResponse<string> Update(string studentnumber , [FromBody] student student)
         {
-            return _service.UpdateStudent(student);
+            return _service.UpdateStudent(studentnumber, student);
         }
 
         [HttpPost("students/random/{count:int}")]

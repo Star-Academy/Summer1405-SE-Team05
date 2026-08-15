@@ -68,11 +68,16 @@ public class DataBaseService : IDBService
         return new ApiResponse<string>(true, "Student added successfully.", "student added");
     }
 
-    public ApiResponse<string> UpdateStudent(student student)
+    public ApiResponse<string> UpdateStudent(string studentnumber , student student)
     {
+
+        if (!studentnumber.Equals(student.studentnumber))
+        {
+            return new ApiResponse<string>(false, "Changing student number is not allowed." , null) ;
+        }
         using var db = _dbManager.GetQueryFactory();
         var exists = db.Query("student")
-                       .Where("studentnumber", student.studentnumber)
+                       .Where("studentnumber", studentnumber)
                        .Exists();
 
         if (exists)
