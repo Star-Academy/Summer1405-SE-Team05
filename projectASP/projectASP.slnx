@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="ASP.integration\ASP.integration.csproj" />
+  <Project Path="ASP.test\ASP.test.csproj" />
+  <Project Path="ASP\ASP.csproj" />
+</Solution>

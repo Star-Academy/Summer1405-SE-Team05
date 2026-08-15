@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدیریت دانش‌آموزان - عملیات اصلی</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+</head>
+<body class="bg-light p-3 p-md-5">
+
+<div class="container" style="max-width: 1000px;">
+
+    <!-- کارت انتخاب دیتابیس فعال -->
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+        <div class="card-body p-3 d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fa-solid fa-database text-indigo fs-5"></i>
+                <span class="fw-bold text-secondary">دیتابیس فعال جهت کوئری‌ها:</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <select id="dbTypeSelect" class="form-select form-select-sm fw-semibold" style="width: 200px;" onchange="fetchStudents()">
+                    <option value="Postgresql" selected>PostgreSQL</option>
+                    <option value="SqlServer">SQL Server</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- کارت فرم افزودن / ویرایش -->
+    <div class="card shadow-lg border-0 rounded-4 mb-4">
+        <div class="card-header bg-dark text-white p-3 p-md-4 rounded-top-4 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold" id="formTitle">
+                <i class="fa-solid fa-user-plus me-2 text-primary"></i>افزودن دانش‌آموز جدید
+            </h5>
+            <button type="button" id="btnCancelEdit" class="btn btn-sm btn-outline-light d-none" onclick="resetForm()">
+                <i class="fa-solid fa-xmark me-1"></i>انصراف از ویرایش
+            </button>
+        </div>
+        <div class="card-body p-4">
+            <form id="studentForm" onsubmit="handleFormSubmit(event)">
+                <div class="row g-3">
+                    <!-- شماره دانش‌آموزی -->
+                    <div class="col-md-4">
+                        <label for="studentnumber" class="form-label fw-semibold">شماره دانش‌آموزی</label>
+                        <input type="text" class="form-control" id="studentnumber" required placeholder="مثال: 40112345">
+                    </div>
+                    <!-- نام -->
+                    <div class="col-md-4">
+                        <label for="firstname" class="form-label fw-semibold">نام</label>
+                        <input type="text" class="form-control" id="firstname" required placeholder="مثال: علی">
+                    </div>
+                    <!-- نام خانوادگی -->
+                    <div class="col-md-4">
+                        <label for="lastname" class="form-label fw-semibold">نام خانوادگی</label>
+                        <input type="text" class="form-control" id="lastname" required placeholder="مثال: محمدی">
+                    </div>
+                    <!-- معدل/نمره -->
+                    <div class="col-md-3">
+                        <label for="grade" class="form-label fw-semibold">معدل (نمره)</label>
+                        <input type="number" step="0.01" min="0" max="20" class="form-control" id="grade" required placeholder="0 - 20">
+                    </div>
+                    <!-- جنسیت -->
+                    <div class="col-md-3">
+                        <label for="ismale" class="form-label fw-semibold">جنسیت</label>
+                        <select class="form-select" id="ismale" required>
+                            <option value="true">مرد</option>
+                            <option value="false">زن</option>
+                        </select>
+                    </div>
+                    <!-- واحدهای مانده -->
+                    <div class="col-md-3">
+                        <label for="leftunitscount" class="form-label fw-semibold">واحدهای مانده</label>
+                        <input type="number" min="0" class="form-control" id="leftunitscount" required placeholder="مثال: 20">
+                    </div>
+                    <!-- تاریخ تولد -->
+                    <div class="col-md-3">
+                        <label for="dateofbirth" class="form-label fw-semibold">تاریخ تولد</label>
+                        <input type="date" class="form-control" id="dateofbirth" required>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-end">
+                    <button type="submit" id="btnSubmit" class="btn btn-primary px-4 rounded-pill">
+                        <i class="fa-solid fa-floppy-disk me-1"></i>ذخیره دانش‌آموز
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- کارت جدول نمایش و مدیریت -->
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-header bg-white p-3 p-md-4 border-bottom-0 d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <h5 class="mb-0 fw-bold text-secondary">
+                <i class="fa-solid fa-users me-2"></i>لیست دانش‌آموزان
+            </h5>
+
+            <!-- ابزارها: تولید تصادفی، به‌روزرسانی و حذف همه -->
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <!-- بخش تولید دانش‌آموز تصادفی -->
+                <div class="input-group input-group-sm" style="width: 220px;">
+                    <input type="number" id="randomCount" class="form-control" value="1" min="1" max="100" placeholder="تعداد">
+                    <button class="btn btn-outline-success" onclick="generateRandomStudents()">
+                        <i class="fa-solid fa-dice me-1"></i>تولید تصادفی
+                    </button>
+                </div>
+
+                <button onclick="fetchStudents()" class="btn btn-outline-secondary btn-sm rounded-pill">
+                    <i class="fa-solid fa-rotate me-1"></i>به‌روزرسانی
+                </button>
+
+                <button onclick="confirmDelete('*')" class="btn btn-outline-danger btn-sm rounded-pill">
+                    <i class="fa-solid fa-trash-can me-1"></i>حذف همه
+                </button>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">شماره دانش‌آموزی</th>
+                        <th>نام و نام خانوادگی</th>
+                        <th>نمره</th>
+                        <th>جنسیت</th>
+                        <th>واحدهای مانده</th>
+                        <th>تاریخ تولد</th>
+                        <th class="text-center pe-4">عملیات</th>
+                    </tr>
+                    </thead>
+                    <tbody id="studentTableBody">
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">در حال دریافت اطلاعات...</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const BASE_URL = 'http://localhost:5139/DataBase/students';
+    let isEditMode = false;
+    let studentsList = [];
+
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+    });
+
+    // تابع کمکی جهت ساخت هدرها همراه با دیتابیس انتخاب‌شده
+    function getHeaders(extraHeaders = {}) {
+        const selectedDb = document.getElementById('dbTypeSelect').value;
+        return {
+            'X-Database-Type': selectedDb,
+            ...extraHeaders
+        };
+    }
+
+    // ۱. دریافت و نمایش لیست دانش‌آموزان
+    async function fetchStudents() {
+        try {
+            const response = await fetch(BASE_URL, {
+                headers: getHeaders(),
+                cache: 'no-store'
+            });
+            if (!response.ok) throw new Error('خطا در دریافت اطلاعات از سرور');
+
+            const result = await response.json();
+
+            if (result.success && result.data) {
+                studentsList = result.data;
+                renderTable(studentsList);
+            } else {
+                renderEmptyTable(result.message || 'هیچ داده‌ای ثبت نشده است.');
+            }
+        } catch (error) {
+            renderEmptyTable(error.message);
+        }
+    }
+
+    function renderTable(list) {
+        const tableBody = document.getElementById('studentTableBody');
+        tableBody.innerHTML = '';
+
+        if (list.length === 0) {
+            renderEmptyTable('دانش‌آموزی یافت نشد.');
+            return;
+        }
+
+        list.forEach(s => {
+            const birthDate = s.dateofbirth ? new Date(s.dateofbirth).toISOString().split('T')[0] : 'نامشخص';
+            const row = `
+                    <tr>
+                        <td class="ps-4"><strong>${s.studentnumber}</strong></td>
+                        <td>${s.firstname} ${s.lastname}</td>
+                        <td><span class="badge ${s.grade >= 10 ? 'bg-success' : 'bg-danger'}">${s.grade}</span></td>
+                        <td>${s.ismale ? 'مرد' : 'زن'}</td>
+                        <td>${s.leftunitscount}</td>
+                        <td>${birthDate}</td>
+                        <td class="text-center pe-4">
+                            <button class="btn btn-sm btn-outline-warning me-1" title="ویرایش" onclick="prepareEdit('${s.studentnumber}')">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" title="حذف" onclick="confirmDelete('${s.studentnumber}')">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            tableBody.insertAdjacentHTML('beforeend', row);
+        });
+    }
+
+    function renderEmptyTable(msg) {
+        document.getElementById('studentTableBody').innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">${msg}</td>
+                </tr>
+            `;
+    }
+
+    // ۲. هندل کردن ثبت فرم (افزودن / ویرایش)
+    async function handleFormSubmit(event) {
+        event.preventDefault();
+
+        const studentData = {
+            studentnumber: document.getElementById('studentnumber').value.trim(),
+            firstname: document.getElementById('firstname').value.trim(),
+            lastname: document.getElementById('lastname').value.trim(),
+            grade: parseFloat(document.getElementById('grade').value),
+            ismale: document.getElementById('ismale').value === 'true',
+            leftunitscount: parseInt(document.getElementById('leftunitscount').value),
+            dateofbirth: new Date(document.getElementById('dateofbirth').value).toISOString()
+        };
+
+        const method = isEditMode ? 'PUT' : 'POST';
+        const actionTitle = isEditMode ? 'ویرایش' : 'افزودن';
+
+        Swal.fire({
+            title: `در حال ${actionTitle} دانش‌آموز...`,
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        try {
+            const response = await fetch(BASE_URL, {
+                method: method,
+                headers: getHeaders({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify(studentData)
+            });
+
+            if (!response.ok) throw new Error('خطا در برقراری ارتباط با سرور');
+
+            const result = await response.json();
+
+            if (result.success) {
+                Swal.close();
+                Toast.fire({
+                    icon: 'success',
+                    title: result.message || `دانش‌آموز با موفقیت ${actionTitle} شد.`
+                });
+                resetForm();
+                fetchStudents();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطا در عملیات',
+                    text: result.message || 'عملیات ناموفق بود.'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'خطای شبکه',
+                text: error.message
+            });
+        }
+    }
+
+    // ۳. تولید دانش‌آموز تصادفی (Random Student Generator)
+    async function generateRandomStudents() {
+        const countInput = document.getElementById('randomCount');
+        const count = parseInt(countInput.value) || 1;
+
+        if (count < 1) return;
+
+        Swal.fire({
+            title: `در حال ساخت ${count} دانش‌آموز تصادفی...`,
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        try {
+            const response = await fetch(`${BASE_URL}/random/${count}`, {
+                method: 'POST',
+                headers: getHeaders()
+            });
+
+            if (!response.ok) throw new Error('خطا در ارسال درخواست تولید تصادفی');
+
+            const result = await response.json();
+
+            if (result.success) {
+                Swal.close();
+                Toast.fire({
+                    icon: 'success',
+                    title: result.message || `${count} دانش‌آموز تصادفی ساخته شد.`
+                });
+                fetchStudents();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطا',
+                    text: result.message || 'امکان ساخت دانش‌آموز تصادفی وجود ندارد.'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'خطای شبکه',
+                text: error.message
+            });
+        }
+    }
+
+    // ۴. آماده‌سازی فرم برای ویرایش (Update)
+    function prepareEdit(studentNumber) {
+        const student = studentsList.find(s => s.studentnumber === studentNumber);
+        if (!student) return;
+
+        isEditMode = true;
+        document.getElementById('studentnumber').value = student.studentnumber;
+        document.getElementById('studentnumber').readOnly = true;
+        document.getElementById('firstname').value = student.firstname;
+        document.getElementById('lastname').value = student.lastname;
+        document.getElementById('grade').value = student.grade;
+        document.getElementById('ismale').value = student.ismale.toString();
+        document.getElementById('leftunitscount').value = student.leftunitscount;
+
+        const formattedDate = new Date(student.dateofbirth).toISOString().split('T')[0];
+        document.getElementById('dateofbirth').value = formattedDate;
+
+        document.getElementById('formTitle').innerHTML = '<i class="fa-solid fa-pen-to-square me-2 text-warning"></i>ویرایش اطلاعات دانش‌آموز';
+        document.getElementById('btnSubmit').className = 'btn btn-warning px-4 rounded-pill';
+        document.getElementById('btnSubmit').innerHTML = '<i class="fa-solid fa-check me-1"></i>بروزرسانی دانش‌آموز';
+        document.getElementById('btnCancelEdit').classList.remove('d-none');
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        isEditMode = false;
+        document.getElementById('studentForm').reset();
+        document.getElementById('studentnumber').readOnly = false;
+
+        document.getElementById('formTitle').innerHTML = '<i class="fa-solid fa-user-plus me-2 text-primary"></i>افزودن دانش‌آموز جدید';
+        document.getElementById('btnSubmit').className = 'btn btn-primary px-4 rounded-pill';
+        document.getElementById('btnSubmit').innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i>ذخیره دانش‌آموز';
+        document.getElementById('btnCancelEdit').classList.add('d-none');
+    }
+
+    // ۵. حذف دانش‌آموز (Delete Single / Delete All)
+    function confirmDelete(studentNumber) {
+        const isDeleteAll = studentNumber === '*';
+        const titleText = isDeleteAll ? 'آیا از حذف تمام دانش‌آموزان مطمئن هستید؟' : 'آیا از حذف مطمئن هستید؟';
+        const bodyText = isDeleteAll
+            ? 'تمام رکوردها پاک خواهند شد و این عملیات قابل بازگشت نیست!'
+            : `دانش‌آموز با شماره ${studentNumber} حذف خواهد شد.`;
+
+        Swal.fire({
+            title: titleText,
+            text: bodyText,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: isDeleteAll ? 'بله، همه پاک شوند' : 'بله، حذف شود',
+            cancelButtonText: 'انصراف'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                deleteStudent(studentNumber);
+            }
+        });
+    }
+
+    async function deleteStudent(studentNumber) {
+        try {
+            const response = await fetch(`${BASE_URL}/${studentNumber}`, {
+                method: 'DELETE',
+                headers: getHeaders()
+            });
+
+            if (!response.ok) throw new Error('خطا در ارسال درخواست حذف');
+
+            const result = await response.json();
+
+            if (result.success) {
+                Toast.fire({
+                    icon: 'success',
+                    title: result.message || 'عملیات حذف با موفقیت انجام شد.'
+                });
+                fetchStudents();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطا در حذف',
+                    text: result.message || 'امکان حذف وجود ندارد.'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'خطای شبکه',
+                text: error.message
+            });
+        }
+    }
+
+    // بارگذاری اولیه جدول هنگام باز شدن صفحه
+    document.addEventListener('DOMContentLoaded', fetchStudents);
+</script>
+</body>
+</html>
