@@ -1,5 +1,5 @@
 <Solution>
-  <Project Path="asp.integration/asp.integration.csproj" />
-  <Project Path="asp.test/asp.test.csproj" />
-  <Project Path="asp/asp.csproj" />
+  <Project Path="ASP.integration\ASP.integration.csproj" />
+  <Project Path="ASP.test\ASP.test.csproj" />
+  <Project Path="ASP\ASP.csproj" />
 </Solution>

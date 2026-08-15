@@ -1,11 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
-using asp.integration.factories;
-using asp.integration.fixtures;
-using asp.models;
+using ASP.integration.fixtures;
+using ASP.models;
 using FluentAssertions;
 
-namespace asp.integration.postgres;
+namespace ASP.integration.fixtures;
 
 [Collection("PostgresIntegrationTests")]
 public class PostgresIntegrationTests : IClassFixture<PostgresContainerFixture>

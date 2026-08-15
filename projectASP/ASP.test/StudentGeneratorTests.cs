@@ -1,8 +1,8 @@
-using asp.helpers;
+using ASP.helpers;
 using FluentAssertions;
 using Xunit;
 
-namespace asp.test;
+namespace Asp.test;
 
 public class StudentGeneratorTests
 {

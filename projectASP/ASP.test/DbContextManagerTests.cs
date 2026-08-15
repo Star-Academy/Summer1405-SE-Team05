@@ -1,11 +1,11 @@
-using asp.services;
+using ASP.services;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using NSubstitute;
 using Xunit;
 
-namespace asp.test;
+namespace Asp.test;
 
 public class DbContextManagerTests
 {

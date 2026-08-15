@@ -2,7 +2,7 @@ using Npgsql;
 using Testcontainers.PostgreSql;
 using Xunit;
 
-namespace asp.integration.fixtures;
+namespace ASP.integration.fixtures;
 
 public class PostgresContainerFixture : IAsyncLifetime
 {

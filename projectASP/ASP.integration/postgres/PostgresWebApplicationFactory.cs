@@ -1,9 +1,9 @@
-using asp.integration.fixtures;
+using ASP.integration.fixtures;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 
-namespace asp.integration.factories;
+namespace ASP.integration.fixtures;
 
 public class PostgresWebApplicationFactory : WebApplicationFactory<Program>
 {

@@ -1,11 +1,11 @@
-﻿using asp.controllers;
-using asp.models;
-using asp.services;
+﻿using ASP.controllers;
+using ASP.models;
+using ASP.services;
 using FluentAssertions;
 using NSubstitute;
 using Xunit;
 
-namespace asp.test;
+namespace Asp.test;
 
 public class DataBaseControllerTests
 {
@@ -22,25 +22,25 @@ public class DataBaseControllerTests
     public void GetAll_ShouldReturnSuccessApiResponse_WhenStudentsExist()
     {
         // Arrange
-        var mockStudents = new List<student>
+        var Students = new List<student>
         {
             new student { studentnumber = "40112345", firstname = "Ali", lastname = "Mohammadi", grade = 18.5f, ismale = true, leftunitscount = 20, dateofbirth = DateTime.Now },
             new student { studentnumber = "40112346", firstname = "Sara", lastname = "Ahmadi", grade = 19.0f, ismale = false, leftunitscount = 15, dateofbirth = DateTime.Now }
         };
 
-        var expectedResponse = new ApiResponse<List<student>>(true, "Students retrieved successfully.", mockStudents);
+        var expectedResponse = new ApiResponse<List<student>>(true, "Students retrieved successfully.", Students);
 
         _dbService.getAll().Returns(expectedResponse);
 
         // Act
         var result = _controller.GetAll();
 
-        // Assert (FluentAssertions Syntax)
+        // Assert 
         result.Should().NotBeNull();
         result.Success.Should().BeTrue();
         result.Data.Should().HaveCount(2);
         result.Data![0].firstname.Should().Be("Ali");
-        result.Data.Should().BeEquivalentTo(mockStudents);
+        result.Data.Should().BeEquivalentTo(Students);
         
         _dbService.Received(1).getAll();
     }
@@ -53,7 +53,7 @@ public class DataBaseControllerTests
         var mockStudent = new student { studentnumber = studentNumber, firstname = "Ali", lastname = "Mohammadi" };
         var expectedResponse = new ApiResponse<student>(true, "Student retrieved successfully.", mockStudent);
 
-        _dbService.getStudentByStudentNumber(studentNumber).Returns(expectedResponse);
+        _dbService.GetStudentByStudentNumber(studentNumber).Returns(expectedResponse);
 
         // Act
         var result = _controller.Getspecific(studentNumber);
@@ -64,7 +64,7 @@ public class DataBaseControllerTests
         result.Data.Should().NotBeNull();
         result.Data!.firstname.Should().Be("Ali");
 
-        _dbService.Received(1).getStudentByStudentNumber(studentNumber);
+        _dbService.Received(1).GetStudentByStudentNumber(studentNumber);
     }
 
     [Fact]
@@ -74,7 +74,7 @@ public class DataBaseControllerTests
         var newStudent = new student { studentnumber = "40112345", firstname = "Ali", lastname = "Mohammadi" };
         var expectedResponse = new ApiResponse<string>(false, "already exists", null);
 
-        _dbService.addStudent(Arg.Any<student>()).Returns(expectedResponse);
+        _dbService.AddStudent(Arg.Any<student>()).Returns(expectedResponse);
 
         // Act
         var result = _controller.Add(newStudent);
@@ -84,7 +84,7 @@ public class DataBaseControllerTests
         result.Success.Should().BeFalse();
         result.Message.Should().Be("already exists");
 
-        _dbService.Received(1).addStudent(Arg.Any<student>());
+        _dbService.Received(1).AddStudent(Arg.Any<student>());
     }
 
     [Fact]
@@ -94,7 +94,7 @@ public class DataBaseControllerTests
         var studentNumber = "40112345";
         var expectedResponse = new ApiResponse<string>(true, "Student deleted successfully.", "deleted successfully");
 
-        _dbService.deleteStudent(studentNumber).Returns(expectedResponse);
+        _dbService.DeleteStudent(studentNumber).Returns(expectedResponse);
 
         // Act
         var result = _controller.Delete(studentNumber);
@@ -104,7 +104,7 @@ public class DataBaseControllerTests
         result.Success.Should().BeTrue();
         result.Data.Should().Be("deleted successfully");
 
-        _dbService.Received(1).deleteStudent(studentNumber);
+        _dbService.Received(1).DeleteStudent(studentNumber);
     }
     
     [Fact]
@@ -114,7 +114,7 @@ public class DataBaseControllerTests
         var studentToUpdate = new student { studentnumber = "40112345", firstname = "AliUpdated" };
         var expectedResponse = new ApiResponse<string>(true, "Student updated successfully.", "updated successfully");
 
-        _dbService.updateStudent(Arg.Any<student>()).Returns(expectedResponse);
+        _dbService.UpdateStudent(Arg.Any<student>()).Returns(expectedResponse);
 
         // Act
         var result = _controller.Update(studentToUpdate);
@@ -123,7 +123,7 @@ public class DataBaseControllerTests
         result.Should().NotBeNull();
         result.Success.Should().BeTrue();
         result.Message.Should().Be("Student updated successfully.");
-        _dbService.Received(1).updateStudent(Arg.Any<student>());
+        _dbService.Received(1).UpdateStudent(Arg.Any<student>());
     }
 
     [Fact]
@@ -134,7 +134,7 @@ public class DataBaseControllerTests
         var mockStudents = new List<student> { new student { studentnumber = "1001" } };
         var expectedResponse = new ApiResponse<List<student>>(true, "3 random students generated successfully.", mockStudents);
 
-        _dbService.generateRandomStudents(count).Returns(expectedResponse);
+        _dbService.GenerateRandomStudents(count).Returns(expectedResponse);
 
         // Act
         var result = _controller.AddRandomStudent(count);
@@ -143,6 +143,6 @@ public class DataBaseControllerTests
         result.Should().NotBeNull();
         result.Success.Should().BeTrue();
         result.Data.Should().HaveCount(1);
-        _dbService.Received(1).generateRandomStudents(count);
+        _dbService.Received(1).GenerateRandomStudents(count);
     }
 }

@@ -1,13 +1,13 @@
 using System.IO;
 using System.Net;
 using System.Text.Json;
-using asp.middlewares;
-using asp.models;
+using ASP.middlewares;
+using ASP.models;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Xunit;
 
-namespace asp.test;
+namespace Asp.test;
 
 public class ExceptionHandlingMiddlewareTests
 {
